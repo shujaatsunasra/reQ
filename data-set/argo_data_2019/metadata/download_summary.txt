@@ -1,0 +1,91 @@
+ARGO Indian Ocean 2019 Download Summary
+==================================================
+
+Total NetCDF files: 31318
+Total index files: 12
+Total data size: 1904.4 MB
+
+Month 01:
+  Profiles: 47331
+  Unique floats: 772
+  Latitude range: [np.float64(-66.7167), np.float64(21.755)]
+  Longitude range: [np.float64(20.1494), np.float64(144.9129)]
+  Depth range: [np.float64(-3171.2), np.float64(5692.4)]
+
+Month 02:
+  Profiles: 43581
+  Unique floats: 790
+  Latitude range: [np.float64(-66.7167), np.float64(21.598)]
+  Longitude range: [np.float64(20.0354), np.float64(144.9795)]
+  Depth range: [np.float64(-3039.6), np.float64(5677.6)]
+
+Month 03:
+  Profiles: 42491
+  Unique floats: 779
+  Latitude range: [np.float64(-66.7167), np.float64(21.057)]
+  Longitude range: [np.float64(20.118), np.float64(144.933)]
+  Depth range: [np.float64(-1945.0), np.float64(6553.4)]
+
+Month 04:
+  Profiles: 41406
+  Unique floats: 805
+  Latitude range: [np.float64(-66.7167), np.float64(19.63)]
+  Longitude range: [np.float64(20.0851), np.float64(144.937)]
+  Depth range: [np.float64(-715.9), np.float64(5693.5)]
+
+Month 05:
+  Profiles: 44086
+  Unique floats: 828
+  Latitude range: [np.float64(-66.7167), np.float64(20.933)]
+  Longitude range: [np.float64(20.064), np.float64(144.7144)]
+  Depth range: [np.float64(-3196.8), np.float64(5699.4)]
+
+Month 06:
+  Profiles: 69037
+  Unique floats: 830
+  Latitude range: [np.float64(-66.7167), np.float64(21.19)]
+  Longitude range: [np.float64(20.0373), np.float64(144.951)]
+  Depth range: [np.float64(-3267.0), np.float64(5553.0)]
+
+Month 07:
+  Profiles: 113639
+  Unique floats: 830
+  Latitude range: [np.float64(-66.7167), np.float64(22.423)]
+  Longitude range: [np.float64(20.1567), np.float64(144.8842)]
+  Depth range: [np.float64(-3225.5), np.float64(5702.7)]
+
+Month 08:
+  Profiles: 115341
+  Unique floats: 826
+  Latitude range: [np.float64(-66.7167), np.float64(22.173)]
+  Longitude range: [np.float64(20.023), np.float64(144.92)]
+  Depth range: [np.float64(-3275.8), np.float64(5701.9)]
+
+Month 09:
+  Profiles: 103015
+  Unique floats: 808
+  Latitude range: [np.float64(-66.7167), np.float64(20.301)]
+  Longitude range: [np.float64(20.091), np.float64(144.8935)]
+  Depth range: [np.float64(-3275.0), np.float64(5703.2)]
+
+Month 10:
+  Profiles: 96445
+  Unique floats: 799
+  Latitude range: [np.float64(-66.815), np.float64(20.379)]
+  Longitude range: [np.float64(20.02), np.float64(144.9354)]
+  Depth range: [np.float64(-3268.7), np.float64(5697.9)]
+
+Month 11:
+  Profiles: 90883
+  Unique floats: 806
+  Latitude range: [np.float64(-67.125), np.float64(20.8367)]
+  Longitude range: [np.float64(20.0808), np.float64(144.9067)]
+  Depth range: [np.float64(-96.0), np.float64(5697.0)]
+
+Month 12:
+  Profiles: 97314
+  Unique floats: 808
+  Latitude range: [np.float64(-67.506), np.float64(20.5622)]
+  Longitude range: [np.float64(20.032), np.float64(144.9804)]
+  Depth range: [np.float64(-437.0), np.float64(5698.7)]
+

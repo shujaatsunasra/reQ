@@ -1,0 +1,58 @@
+# FastAPI and web framework
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+python-multipart==0.0.9
+pydantic==2.6.1
+pydantic-settings==2.2.1
+
+# Database
+asyncpg==0.29.0
+supabase==2.4.0
+psycopg2-binary==2.9.9
+
+# Redis
+redis==5.0.3
+
+# ChromaDB (Vector store)
+chromadb==0.4.24
+
+# NLP and AI
+spacy==3.7.4
+sentence-transformers==2.7.0
+google-generativeai==0.4.1
+openai==1.14.3
+anthropic==0.21.3
+
+# Async and concurrency
+aiohttp==3.9.3
+httpx==0.25.2
+tenacity==8.2.3
+
+# Utilities
+python-dotenv==1.0.1
+structlog==24.1.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Data processing
+numpy==1.26.4
+pandas==2.2.1
+scipy==1.12.0
+
+# NetCDF for ARGO data
+netCDF4==1.6.5
+
+# Monitoring
+prometheus-client==0.20.0
+opentelemetry-api==1.24.0
+opentelemetry-sdk==1.24.0
+opentelemetry-instrumentation-fastapi==0.45b0
+
+# Testing
+pytest==8.1.1
+pytest-asyncio==0.23.6
+pytest-cov==4.1.0
+
+# Type checking
+mypy==1.9.0
+types-redis==4.6.0.20240311

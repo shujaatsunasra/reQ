@@ -43,6 +43,10 @@ interface FloatPosition {
   temperature?: number;
   salinity?: number;
   pressure?: number;
+  // Anomaly detection fields
+  is_anomaly?: boolean;
+  anomaly_type?: 'temperature' | 'salinity' | 'both' | null;
+  anomaly_score?: number; // 0-1 score for severity
 }
 
 interface TrajectoryData {
@@ -114,8 +118,14 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
     return colorMap;
   }, [data.trajectories]);
 
-  // Get point color based on colorBy setting
+  // Get point color based on colorBy setting or anomaly status
   const getPointColor = (point: FloatPosition): string => {
+    // Anomalies get special highlighting
+    if (point.is_anomaly) {
+      if (point.anomaly_type === 'temperature') return '#ff3333'; // Bright red
+      if (point.anomaly_type === 'salinity') return '#ff9933'; // Orange
+      return '#ff0066'; // Magenta for both
+    }
     if (data.colorBy === 'temperature' && point.temperature !== undefined) {
       return getTemperatureColor(point.temperature);
     }
@@ -128,13 +138,22 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
     return '#3b82f6';
   };
 
+  // Get marker radius based on anomaly status (anomalies are 4x larger)
+  const getMarkerRadius = (point: FloatPosition, isSelected: boolean = false): number => {
+    const baseRadius = isSelected ? 6 : 4;
+    if (point.is_anomaly) {
+      return baseRadius * 4; // 4x larger for anomalies
+    }
+    return baseRadius;
+  };
+
   useEffect(() => {
     setIsLoaded(true);
   }, []);
 
   if (!isLoaded) {
     return (
-      <div 
+      <div
         className={`flex items-center justify-center bg-ocean-900/20 rounded-lg ${className}`}
         style={{ height }}
       >
@@ -190,11 +209,11 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
                 <CircleMarker
                   key={`${trajectory.float_id}-${idx}`}
                   center={[pos.lat, pos.lon]}
-                  radius={isSelected ? 6 : 4}
+                  radius={getMarkerRadius(pos, isSelected)}
                   fillColor={getPointColor(pos)}
-                  fillOpacity={0.8}
-                  color={trajectoryColors[trajectory.float_id]}
-                  weight={1}
+                  fillOpacity={pos.is_anomaly ? 1 : 0.8}
+                  color={pos.is_anomaly ? '#ffffff' : trajectoryColors[trajectory.float_id]}
+                  weight={pos.is_anomaly ? 3 : 1}
                   eventHandlers={{
                     mouseover: () => setHoveredPoint(pos),
                     mouseout: () => setHoveredPoint(null),
@@ -202,11 +221,22 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
                 >
                   <Tooltip>
                     <div className="text-xs">
-                      <div className="font-semibold">{pos.float_id}</div>
+                      <div className="font-semibold">
+                        {pos.float_id}
+                        {pos.is_anomaly && (
+                          <span className="ml-1 px-1 py-0.5 bg-red-500 text-white text-[10px] rounded">ANOMALY</span>
+                        )}
+                      </div>
                       <div>Cycle: {pos.cycle_number}</div>
                       <div>Date: {new Date(pos.timestamp).toLocaleDateString()}</div>
                       {pos.temperature && <div>Temp: {pos.temperature.toFixed(2)}°C</div>}
                       {pos.salinity && <div>Sal: {pos.salinity.toFixed(2)} PSU</div>}
+                      {pos.is_anomaly && pos.anomaly_type && (
+                        <div className="mt-1 text-red-400">
+                          ⚠️ {pos.anomaly_type.charAt(0).toUpperCase() + pos.anomaly_type.slice(1)} anomaly
+                          {pos.anomaly_score && ` (${Math.round(pos.anomaly_score * 100)}% severity)`}
+                        </div>
+                      )}
                     </div>
                   </Tooltip>
                 </CircleMarker>
@@ -252,15 +282,20 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
           <CircleMarker
             key={`point-${idx}`}
             center={[point.lat, point.lon]}
-            radius={6}
+            radius={getMarkerRadius(point)}
             fillColor={getPointColor(point)}
-            fillOpacity={0.8}
-            color="#fff"
-            weight={1}
+            fillOpacity={point.is_anomaly ? 1 : 0.8}
+            color={point.is_anomaly ? '#ffffff' : '#fff'}
+            weight={point.is_anomaly ? 3 : 1}
           >
             <Popup>
               <div className="text-sm">
-                <div className="font-semibold mb-1">{point.float_id}</div>
+                <div className="font-semibold mb-1">
+                  {point.float_id}
+                  {point.is_anomaly && (
+                    <span className="ml-1 px-1 py-0.5 bg-red-500 text-white text-[10px] rounded">ANOMALY</span>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                   <span className="text-gray-500">Cycle:</span>
                   <span>{point.cycle_number}</span>
@@ -285,6 +320,12 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
                     </>
                   )}
                 </div>
+                {point.is_anomaly && point.anomaly_type && (
+                  <div className="mt-2 p-1 bg-red-100 text-red-700 rounded text-xs">
+                    ⚠️ {point.anomaly_type.charAt(0).toUpperCase() + point.anomaly_type.slice(1)} anomaly
+                    {point.anomaly_score && ` (${Math.round(point.anomaly_score * 100)}% severity)`}
+                  </div>
+                )}
               </div>
             </Popup>
           </CircleMarker>
@@ -306,11 +347,10 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
                 onClick={() => setSelectedFloat(
                   selectedFloat === traj.float_id ? null : traj.float_id
                 )}
-                className={`flex items-center gap-2 w-full px-2 py-1 rounded text-xs transition-colors ${
-                  selectedFloat === traj.float_id
-                    ? 'bg-ocean-500/30 text-ocean-300'
-                    : 'hover:bg-gray-800 text-gray-300'
-                }`}
+                className={`flex items-center gap-2 w-full px-2 py-1 rounded text-xs transition-colors ${selectedFloat === traj.float_id
+                  ? 'bg-ocean-500/30 text-ocean-300'
+                  : 'hover:bg-gray-800 text-gray-300'
+                  }`}
               >
                 <div
                   className="w-3 h-3 rounded-full"
@@ -335,7 +375,7 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
         >
           <div className="text-xs font-semibold text-gray-400 mb-2">
             {data.colorBy === 'temperature' ? 'Temperature (°C)' :
-             data.colorBy === 'salinity' ? 'Salinity (PSU)' : 'Depth (dbar)'}
+              data.colorBy === 'salinity' ? 'Salinity (PSU)' : 'Depth (dbar)'}
           </div>
           <div className="flex items-center gap-1">
             {data.colorBy === 'temperature' && (

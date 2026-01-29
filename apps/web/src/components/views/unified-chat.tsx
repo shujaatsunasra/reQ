@@ -143,6 +143,10 @@ interface FloatData {
   qc_psal?: number;
   qc_pres?: number;
   data_mode?: string;
+  // Anomaly detection fields
+  is_anomaly?: boolean;
+  anomaly_type?: 'temperature' | 'salinity' | 'both' | null;
+  anomaly_score?: number; // 0-1 score for severity
 }
 
 interface MessageArtifact {

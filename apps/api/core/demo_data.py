@@ -85,11 +85,32 @@ def generate_profile(
     temp = region["avg_temp"] + random.gauss(0, 2)
     salinity = region["avg_salinity"] + random.gauss(0, 0.5)
     
+    # Occasionally generate anomalous data (10% chance)
+    is_anomaly = random.random() < 0.10
+    anomaly_type = None
+    anomaly_score = 0.0
+    
+    if is_anomaly:
+        anomaly_type = random.choice(["temperature", "salinity", "both"])
+        if anomaly_type in ["temperature", "both"]:
+            # Significant temperature anomaly (±5-10°C from average)
+            temp_deviation = random.choice([-1, 1]) * random.uniform(5, 10)
+            temp = region["avg_temp"] + temp_deviation
+            anomaly_score = min(1.0, abs(temp_deviation) / 10)
+        if anomaly_type in ["salinity", "both"]:
+            # Significant salinity anomaly (±2-4 PSU from average)
+            sal_deviation = random.choice([-1, 1]) * random.uniform(2, 4)
+            salinity = region["avg_salinity"] + sal_deviation
+            anomaly_score = max(anomaly_score, min(1.0, abs(sal_deviation) / 4))
+    
     # Depth (surface measurement)
     depth = random.uniform(5, 50)
     
-    # QC flags (mostly good data)
-    qc_flag = random.choices([1, 2, 3, 4], weights=[85, 10, 3, 2])[0]
+    # QC flags (mostly good data, but anomalies more likely to have issues)
+    if is_anomaly:
+        qc_flag = random.choices([1, 2, 3, 4], weights=[40, 30, 20, 10])[0]
+    else:
+        qc_flag = random.choices([1, 2, 3, 4], weights=[85, 10, 3, 2])[0]
     
     # Data mode
     data_mode = random.choices(["R", "A", "D"], weights=[40, 40, 20])[0]
@@ -109,6 +130,9 @@ def generate_profile(
         "qc_temp": str(qc_flag),
         "data_mode": data_mode,
         "direction": "A",
+        "is_anomaly": is_anomaly,
+        "anomaly_type": anomaly_type,
+        "anomaly_score": round(anomaly_score, 3),
     }
 
 
@@ -197,13 +221,13 @@ def query_demo_data(
     
     # Adjust count based on query hints
     if "recent" in query_lower or "latest" in query_lower:
-        count = min(20, limit)
+        count = min(100, limit)
         start_date = datetime.now() - timedelta(days=30)
     elif "all" in query_lower or "many" in query_lower:
-        count = min(100, limit)
+        count = min(500, limit)
         start_date = datetime.now() - timedelta(days=365)
     else:
-        count = min(50, limit)
+        count = min(200, limit)
         start_date = datetime.now() - timedelta(days=180)
     
     # Generate profiles
@@ -234,6 +258,7 @@ def query_demo_data(
         temps = [p["temperature"] for p in profiles if p.get("temperature")]
         sals = [p["salinity"] for p in profiles if p.get("salinity")]
         depths = [p["depth"] for p in profiles if p.get("depth")]
+        anomalies = [p for p in profiles if p.get("is_anomaly")]
         
         stats = {
             "avg_temp": round(sum(temps) / len(temps), 2) if temps else None,
@@ -246,6 +271,16 @@ def query_demo_data(
                 "probably_good": len([p for p in profiles if p.get("qc_flag") == 2]),
                 "probably_bad": len([p for p in profiles if p.get("qc_flag") == 3]),
                 "bad": len([p for p in profiles if p.get("qc_flag") == 4]),
+            },
+            "anomalies": {
+                "count": len(anomalies),
+                "percentage": round(len(anomalies) / len(profiles) * 100, 1) if profiles else 0,
+                "by_type": {
+                    "temperature": len([a for a in anomalies if a.get("anomaly_type") == "temperature"]),
+                    "salinity": len([a for a in anomalies if a.get("anomaly_type") == "salinity"]),
+                    "both": len([a for a in anomalies if a.get("anomaly_type") == "both"]),
+                },
+                "avg_score": round(sum(a.get("anomaly_score", 0) for a in anomalies) / len(anomalies), 2) if anomalies else 0,
             }
         }
     else:

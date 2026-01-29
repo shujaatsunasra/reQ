@@ -133,7 +133,7 @@ class StructuredDataServer(MCPServer):
         # Fallback to demo data
         from core.demo_data import query_demo_data
         self.logger.info(f"Using demo data for region: {region_name}")
-        demo_result = query_demo_data(region_name or "ocean", limit=100)
+        demo_result = query_demo_data(region_name or "ocean", limit=500)
         
         # Transform demo data to match expected format
         profiles = []
@@ -165,7 +165,7 @@ class StructuredDataServer(MCPServer):
             # Use demo data for "recent" or "last month" type queries
             from core.demo_data import query_demo_data
             self.logger.info("Using demo data for temporal filter (no date range)")
-            demo_result = query_demo_data("recent data", limit=100)
+            demo_result = query_demo_data("recent data", limit=500)
             return {"data": demo_result.get("profiles", []), "count": demo_result.get("count", 0), "demo_mode": True}
         
         query = """
@@ -189,7 +189,7 @@ class StructuredDataServer(MCPServer):
         
         # Fallback to demo data
         from core.demo_data import query_demo_data
-        demo_result = query_demo_data("recent", limit=100)
+        demo_result = query_demo_data("recent", limit=500)
         return {"data": demo_result.get("profiles", []), "count": demo_result.get("count", 0), "demo_mode": True}
     
     async def _parameter_filter(self, params: Dict[str, Any]) -> Dict[str, Any]:

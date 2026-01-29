@@ -175,7 +175,7 @@ class MetadataProcessingServer(MCPServer):
             SELECT float_id, metadata
             FROM file_index
             WHERE metadata->$1 @> $2::jsonb
-            LIMIT 100
+            LIMIT 500
         """
         
         try:

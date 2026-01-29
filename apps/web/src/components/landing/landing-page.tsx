@@ -29,12 +29,12 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
 
   const handleSubmit = useCallback(() => {
     if (!query.trim()) return;
-    
+
     if (!hasApiKey) {
       setShowApiSetup(true);
       return;
     }
-    
+
     onQuerySubmit(query.trim());
   }, [query, hasApiKey, onQuerySubmit]);
 
@@ -65,38 +65,37 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
   }, [tempGroqKey, setGroqApiKey]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30 flex flex-col overflow-hidden">
       {/* Minimal Header */}
       <header className="flex items-center justify-between px-6 h-16">
         <div className="flex items-center gap-2">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20"
+            className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/30"
           >
             <Sparkles className="w-4.5 h-4.5 text-primary-foreground" />
           </motion.div>
-          <motion.span 
+          <motion.span
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="font-bold text-xl tracking-tight"
+            className="font-extrabold text-2xl tracking-tight"
           >
             FloatChat
           </motion.span>
         </div>
-        
+
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
           onClick={() => setShowApiSetup(true)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-            hasApiKey 
-              ? "bg-green-500/10 text-green-600 dark:text-green-400" 
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${hasApiKey
+              ? "bg-green-500/10 text-green-600 dark:text-green-400"
               : "bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
-          }`}
+            }`}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -115,7 +114,7 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
           className="text-center mb-10"
         >
           {/* Animated badge */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
@@ -129,12 +128,12 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
             </motion.div>
             Powered by ARGO Float Data
           </motion.div>
-          
-          <h1 className="text-5xl md:text-6xl font-bold mb-5 tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text">
+
+          <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-foreground">
             Explore Ocean Data
           </h1>
-          <p className="text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
-            Ask questions about oceanographic data using natural language. 
+          <p className="text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed font-medium">
+            Ask questions about oceanographic data using natural language.
             Get instant maps, visualizations, and analysis.
           </p>
         </motion.div>
@@ -146,13 +145,12 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
           transition={{ duration: 0.4, delay: 0.15 }}
           className="w-full max-w-2xl mb-8"
         >
-          <motion.div 
-            className={`relative group transition-all duration-300 ${
-              inputFocused ? 'scale-[1.01]' : ''
-            }`}
+          <motion.div
+            className={`relative group transition-all duration-300 ${inputFocused ? 'scale-[1.01]' : ''
+              }`}
             animate={{
-              boxShadow: inputFocused 
-                ? '0 8px 40px rgba(0,0,0,0.12)' 
+              boxShadow: inputFocused
+                ? '0 8px 40px rgba(0,0,0,0.12)'
                 : '0 4px 20px rgba(0,0,0,0.06)'
             }}
             style={{ borderRadius: '1rem' }}
@@ -165,11 +163,10 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
               onFocus={() => setInputFocused(true)}
               onBlur={() => setInputFocused(false)}
               placeholder="Ask about ARGO floats, temperature, salinity..."
-              className={`w-full px-6 py-5 pr-16 bg-card border-2 rounded-2xl text-base focus:outline-none transition-all duration-200 ${
-                inputFocused 
-                  ? 'border-primary/40 bg-background' 
-                  : 'border-transparent hover:border-border'
-              }`}
+              className={`w-full px-6 py-5 pr-16 bg-card border-2 rounded-2xl text-base font-medium focus:outline-none transition-all duration-200 shadow-lg ${inputFocused
+                  ? 'border-primary shadow-xl shadow-primary/10'
+                  : 'border-border hover:border-primary/30 hover:shadow-xl'
+                }`}
             />
             <motion.button
               onClick={handleSubmit}
@@ -181,9 +178,9 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
               <ArrowRight className="w-5 h-5" />
             </motion.button>
           </motion.div>
-          
+
           {!hasApiKey && (
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -210,12 +207,12 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
               onClick={() => handlePromptClick(prompt.query)}
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              className="group flex flex-col items-center gap-3 p-4 bg-card hover:bg-muted border rounded-xl text-sm transition-all"
+              className="group flex flex-col items-center gap-3 p-5 bg-card hover:bg-white border-2 border-border hover:border-primary/30 rounded-xl text-sm transition-all shadow-md hover:shadow-xl"
             >
               <div className="w-10 h-10 rounded-lg bg-muted group-hover:bg-primary/10 flex items-center justify-center transition-colors">
                 <prompt.icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
-              <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors text-center">
+              <span className="text-sm font-semibold text-muted-foreground group-hover:text-foreground transition-colors text-center">
                 {prompt.label}
               </span>
             </motion.button>
@@ -244,7 +241,7 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
             onClick={() => setShowApiSetup(false)}
             className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
           />
-          
+
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -262,7 +259,7 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
                   <p className="text-xs text-muted-foreground">Add your API key to start exploring</p>
                 </div>
               </div>
-              
+
               <div className="mb-5">
                 <label className="text-sm font-medium mb-2 block">
                   Groq API Key <span className="text-xs text-muted-foreground">(free)</span>
@@ -284,7 +281,7 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
                   Get your free API key from Groq Console →
                 </a>
               </div>
-              
+
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowApiSetup(false)}

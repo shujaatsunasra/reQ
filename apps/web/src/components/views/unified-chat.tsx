@@ -368,6 +368,14 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
         m.isTyping ? assistantMessage : m
       ));
 
+      // Persist assistant message to store
+      if (activeConversationId) {
+        addStoreMessage(activeConversationId, {
+          role: "assistant",
+          content: data.response || "Analysis complete."
+        });
+      }
+
       // Auto-open artifact panel if we have artifacts
       if (artifacts.length > 0) {
         setActiveArtifact(artifacts[0]);
@@ -407,6 +415,12 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
   const handleQuerySubmit = useCallback((query: string) => {
     if (!query.trim() || isLoading) return;
 
+    // Create conversation if none active
+    let convId = activeConversationId;
+    if (!convId) {
+      convId = createConversation();
+    }
+
     // Add user message
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -414,6 +428,9 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
       content: query.trim(),
       timestamp: new Date(),
     };
+
+    // Persist user message to store
+    addStoreMessage(convId, { role: "user", content: query.trim() });
 
     // Add typing indicator
     const typingMessage: Message = {
@@ -429,7 +446,7 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
     setInput("");
 
     queryMutation.mutate(query.trim());
-  }, [isLoading, queryMutation]);
+  }, [isLoading, queryMutation, activeConversationId, createConversation, addStoreMessage]);
 
   const handleSubmit = useCallback(() => {
     handleQuerySubmit(input);
@@ -641,30 +658,8 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
                               </div>
                             )}
 
-                            {/* Metadata and actions */}
+                            {/* Actions only - metadata removed */}
                             <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border/30">
-                              {message.metadata && (
-                                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                                  {message.metadata.confidence !== undefined && (
-                                    <span className="flex items-center gap-1">
-                                      <Gauge className="w-3 h-3" />
-                                      {Math.round(message.metadata.confidence * 100)}%
-                                    </span>
-                                  )}
-                                  {message.metadata.executionTime !== undefined && (
-                                    <span className="flex items-center gap-1">
-                                      <Clock className="w-3 h-3" />
-                                      {message.metadata.executionTime.toFixed(0)}ms
-                                    </span>
-                                  )}
-                                  {message.metadata.rowsReturned !== undefined && message.metadata.rowsReturned > 0 && (
-                                    <span className="flex items-center gap-1">
-                                      <Database className="w-3 h-3" />
-                                      {message.metadata.rowsReturned} records
-                                    </span>
-                                  )}
-                                </div>
-                              )}
                               <div className="flex-1" />
                               <div className="flex items-center gap-1">
                                 <button

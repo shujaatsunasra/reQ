@@ -224,7 +224,7 @@ export function TrajectoryPlot({
 
     return (
         <motion.div
-            className={`bg-gray-900/30 rounded-xl p-4 ${className}`}
+            className={`bg-card border border-border rounded-xl p-4 shadow-sm ${className}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -232,12 +232,12 @@ export function TrajectoryPlot({
             {/* Header */}
             <div className="mb-4 flex items-center justify-between">
                 <div>
-                    <h3 className="text-lg font-semibold text-white">{displayTitle}</h3>
-                    <p className="text-sm text-gray-400">
+                    <h3 className="text-lg font-semibold text-foreground">{displayTitle}</h3>
+                    <p className="text-sm text-muted-foreground">
                         Spatial trajectory over {timeSpan}
                     </p>
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md">
                     {chartData.length} positions
                 </div>
             </div>
@@ -305,46 +305,46 @@ export function TrajectoryPlot({
             </div>
 
             {/* Legend */}
-            <div className="mt-4 flex flex-wrap gap-4 items-center justify-center">
+            <div className="mt-4 flex flex-wrap gap-4 items-center justify-center bg-muted/50 rounded-lg py-2">
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow" />
-                    <span className="text-xs text-gray-400">Start</span>
+                    <span className="text-xs font-medium text-foreground">Start</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow" />
-                    <span className="text-xs text-gray-400">Latest</span>
+                    <span className="text-xs font-medium text-foreground">Latest</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-blue-500 border border-white shadow" />
-                    <span className="text-xs text-gray-400">Milestone</span>
+                    <span className="text-xs font-medium text-foreground">Milestone</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-6 h-0.5 bg-blue-600" />
-                    <span className="text-xs text-gray-400">Path</span>
+                    <span className="text-xs font-medium text-foreground">Path</span>
                 </div>
             </div>
 
             {/* Stats */}
             <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-gray-800/50 rounded-lg p-2 text-center">
-                    <div className="text-xs text-gray-400">Lat Range</div>
-                    <div className="text-sm font-medium text-blue-400">
+                <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-lg p-2 text-center">
+                    <div className="text-xs text-muted-foreground font-medium">Lat Range</div>
+                    <div className="text-sm font-semibold text-blue-600 dark:text-blue-400">
                         {bounds.latMin.toFixed(1)}° – {bounds.latMax.toFixed(1)}°N
                     </div>
                 </div>
-                <div className="bg-gray-800/50 rounded-lg p-2 text-center">
-                    <div className="text-xs text-gray-400">Lon Range</div>
-                    <div className="text-sm font-medium text-green-400">
+                <div className="bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-lg p-2 text-center">
+                    <div className="text-xs text-muted-foreground font-medium">Lon Range</div>
+                    <div className="text-sm font-semibold text-green-600 dark:text-green-400">
                         {bounds.lonMin.toFixed(1)}° – {bounds.lonMax.toFixed(1)}°E
                     </div>
                 </div>
-                <div className="bg-gray-800/50 rounded-lg p-2 text-center">
-                    <div className="text-xs text-gray-400">Time Span</div>
-                    <div className="text-sm font-medium text-purple-400">{timeSpan}</div>
+                <div className="bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 rounded-lg p-2 text-center">
+                    <div className="text-xs text-muted-foreground font-medium">Time Span</div>
+                    <div className="text-sm font-semibold text-purple-600 dark:text-purple-400">{timeSpan}</div>
                 </div>
-                <div className="bg-gray-800/50 rounded-lg p-2 text-center">
-                    <div className="text-xs text-gray-400">Positions</div>
-                    <div className="text-sm font-medium text-orange-400">{chartData.length}</div>
+                <div className="bg-orange-50 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-800 rounded-lg p-2 text-center">
+                    <div className="text-xs text-muted-foreground font-medium">Positions</div>
+                    <div className="text-sm font-semibold text-orange-600 dark:text-orange-400">{chartData.length}</div>
                 </div>
             </div>
         </motion.div>

@@ -101,9 +101,9 @@ export function TimeSeriesChart({
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-gray-900/95 backdrop-blur-sm rounded-lg p-3 border border-ocean-500/30 shadow-xl"
+        className="bg-popover border border-border rounded-lg p-3 shadow-xl"
       >
-        <div className="text-xs text-gray-400 mb-2">{label}</div>
+        <div className="text-xs text-muted-foreground mb-2">{label}</div>
         <div className="space-y-1">
           {payload.map((entry: any, idx: number) => {
             const seriesConfig = series.find((s) => s.key === entry.dataKey);
@@ -113,8 +113,8 @@ export function TimeSeriesChart({
                   className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: entry.color }}
                 />
-                <span className="text-gray-300">{seriesConfig?.name || entry.name}:</span>
-                <span className="font-medium text-white">
+                <span className="text-muted-foreground">{seriesConfig?.name || entry.name}:</span>
+                <span className="font-medium text-foreground">
                   {formatValue(entry.value, seriesConfig?.unit)}
                 </span>
               </div>
@@ -127,23 +127,22 @@ export function TimeSeriesChart({
 
   // Custom legend with click-to-hide
   const CustomLegend = () => (
-    <div className="flex flex-wrap justify-center gap-4 mt-2">
+    <div className="flex flex-wrap justify-center gap-4 mt-2 bg-muted/50 rounded-lg py-2">
       {series.map((s) => (
         <button
           key={s.key}
           onClick={() => toggleSeries(s.key)}
-          className={`flex items-center gap-2 px-2 py-1 rounded text-xs transition-all ${
-            hiddenSeries.has(s.key)
+          className={`flex items-center gap-2 px-2 py-1 rounded text-xs transition-all ${hiddenSeries.has(s.key)
               ? 'opacity-40 line-through'
-              : 'opacity-100 hover:bg-gray-800'
-          }`}
+              : 'opacity-100 hover:bg-muted'
+            }`}
         >
           <div
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: s.color }}
           />
-          <span className="text-gray-300">{s.name}</span>
-          {s.unit && <span className="text-gray-500">({s.unit})</span>}
+          <span className="text-foreground font-medium">{s.name}</span>
+          {s.unit && <span className="text-muted-foreground">({s.unit})</span>}
         </button>
       ))}
     </div>
@@ -153,7 +152,7 @@ export function TimeSeriesChart({
 
   return (
     <motion.div
-      className={`bg-gray-900/30 rounded-xl p-4 ${className}`}
+      className={`bg-card border border-border rounded-xl p-4 shadow-sm ${className}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -162,10 +161,10 @@ export function TimeSeriesChart({
       {(title || subtitle) && (
         <div className="mb-4">
           {title && (
-            <h3 className="text-lg font-semibold text-white">{title}</h3>
+            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
           )}
           {subtitle && (
-            <p className="text-sm text-gray-400">{subtitle}</p>
+            <p className="text-sm text-muted-foreground">{subtitle}</p>
           )}
         </div>
       )}
@@ -330,9 +329,9 @@ export function TimeSeriesChart({
               return (
                 <div
                   key={s.key}
-                  className="bg-gray-800/50 rounded-lg p-2 text-center"
+                  className="bg-muted border border-border rounded-lg p-2 text-center"
                 >
-                  <div className="text-xs text-gray-400">{s.name}</div>
+                  <div className="text-xs text-muted-foreground font-medium">{s.name}</div>
                   <div className="text-lg font-semibold" style={{ color: s.color }}>
                     {typeof value === 'number' ? formatValue(value, s.unit) : value}
                   </div>

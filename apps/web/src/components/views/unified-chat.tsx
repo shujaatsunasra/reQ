@@ -112,6 +112,10 @@ const TimeSeriesChart = dynamic(
   () => import("@/components/visualizations/time-series-chart").then((mod) => mod.TimeSeriesChart),
   { ssr: false, loading: () => <VizLoadingPlaceholder /> }
 );
+const TrajectoryPlot = dynamic(
+  () => import("@/components/visualizations/trajectory-plot").then((mod) => mod.TrajectoryPlot),
+  { ssr: false, loading: () => <VizLoadingPlaceholder /> }
+);
 
 // Loading placeholder for visualizations
 function VizLoadingPlaceholder() {
@@ -146,7 +150,7 @@ interface MessageArtifact {
   type: 'map' | 'chart' | 'table' | 'visualization';
   title: string;
   data: any;
-  visualization?: 'heatmap' | 'hovmoller' | 'ts' | 'profile' | 'qc' | 'timeseries';
+  visualization?: 'heatmap' | 'hovmoller' | 'ts' | 'profile' | 'qc' | 'timeseries' | 'trajectory';
 }
 
 interface Message {
@@ -187,6 +191,9 @@ function detectVisualizationNeed(query: string, response: any): { needsMap: bool
   const needsMap = mapKeywords.some(k => lowerQuery.includes(k) || lowerResponse.includes(k));
 
   // Visualization keywords
+  if (lowerQuery.includes('trajectory') || lowerQuery.includes('path') || lowerQuery.includes('movement') || lowerQuery.includes('float track')) {
+    return { needsMap, needsViz: true, vizType: 'trajectory' };
+  }
   if (lowerQuery.includes('hovmöller') || lowerQuery.includes('hovmoller') || lowerQuery.includes('depth-time')) {
     return { needsMap, needsViz: true, vizType: 'hovmoller' };
   }
@@ -334,7 +341,8 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
                 vizNeeds.vizType === 'profile' ? 'Vertical Profiles' :
                   vizNeeds.vizType === 'qc' ? 'Quality Control' :
                     vizNeeds.vizType === 'hovmoller' ? 'Hovmöller Diagram' :
-                      'Heatmap',
+                      vizNeeds.vizType === 'trajectory' ? 'Float Trajectory' :
+                        'Heatmap',
             data: profiles,
             visualization: vizNeeds.vizType as any,
           });
@@ -906,6 +914,24 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
                         }))}
                       parameter="temperature"
                       height={350}
+                    />
+                  )}
+
+                  {activeArtifact.visualization === 'trajectory' && (
+                    <TrajectoryPlot
+                      data={(activeArtifact.data as FloatData[])
+                        .filter(f => f.lat && f.lng && f.date)
+                        .map(f => ({
+                          latitude: f.lat,
+                          longitude: f.lng,
+                          timestamp: f.date!,
+                          float_id: f.id,
+                          temperature: f.temp,
+                          salinity: f.salinity,
+                        }))}
+                      showDateLabels={true}
+                      markerInterval={10}
+                      height={400}
                     />
                   )}
                 </div>

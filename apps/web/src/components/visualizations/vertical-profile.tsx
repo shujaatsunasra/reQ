@@ -100,9 +100,9 @@ export function VerticalProfile({
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-gray-900/95 backdrop-blur-sm rounded-lg p-3 border border-ocean-500/30 shadow-xl"
+        className="bg-popover border border-border rounded-lg p-3 shadow-xl"
       >
-        <div className="text-xs text-gray-400 mb-2">
+        <div className="text-xs text-muted-foreground mb-2">
           Depth: {dataPoint.pressure.toFixed(0)} dbar
         </div>
         <div className="space-y-1">
@@ -118,8 +118,8 @@ export function VerticalProfile({
                   className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: config.color }}
                 />
-                <span className="text-gray-300">{config.name}:</span>
-                <span className="font-medium text-white">
+                <span className="text-muted-foreground">{config.name}:</span>
+                <span className="font-medium text-foreground">
                   {value.toFixed(2)} {config.unit}
                 </span>
               </div>
@@ -132,7 +132,7 @@ export function VerticalProfile({
 
   return (
     <motion.div
-      className={`bg-gray-900/30 rounded-xl p-4 ${className}`}
+      className={`bg-card border border-border rounded-xl p-4 shadow-sm ${className}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -141,9 +141,9 @@ export function VerticalProfile({
       <div className="mb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white">{title}</h3>
+            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
             {(floatId || cycleNumber || timestamp) && (
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 {floatId && <span>Float: {floatId}</span>}
                 {cycleNumber && <span className="ml-3">Cycle: {cycleNumber}</span>}
                 {timestamp && (
@@ -161,11 +161,10 @@ export function VerticalProfile({
               <button
                 key={variable}
                 onClick={() => toggleVariable(variable)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                  activeVariables.has(variable)
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${activeVariables.has(variable)
                     ? 'bg-opacity-30'
                     : 'bg-gray-800 text-gray-500'
-                }`}
+                  }`}
                 style={{
                   backgroundColor: activeVariables.has(variable)
                     ? `${VARIABLE_CONFIG[variable].color}30`
@@ -266,7 +265,7 @@ export function VerticalProfile({
       </ResponsiveContainer>
 
       {/* Legend and stats */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 bg-muted/50 rounded-lg p-2">
         {/* Legend */}
         <div className="flex gap-4">
           {availableVariables.map((variable) => (
@@ -276,7 +275,7 @@ export function VerticalProfile({
                   className="w-3 h-0.5"
                   style={{ backgroundColor: VARIABLE_CONFIG[variable].color }}
                 />
-                <span className="text-gray-400">
+                <span className="text-foreground font-medium">
                   {VARIABLE_CONFIG[variable].name} ({VARIABLE_CONFIG[variable].unit})
                 </span>
               </div>
@@ -285,7 +284,7 @@ export function VerticalProfile({
         </div>
 
         {/* Quick stats */}
-        <div className="flex gap-4 text-xs text-gray-400">
+        <div className="flex gap-4 text-xs text-muted-foreground">
           <span>Max depth: {Math.max(...data.map((d) => d.pressure)).toFixed(0)} dbar</span>
           <span>Points: {data.length}</span>
           {mldValue && <span>MLD: {mldValue.toFixed(0)} m</span>}

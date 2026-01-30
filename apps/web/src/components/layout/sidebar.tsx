@@ -215,38 +215,6 @@ function SidebarComponent({ isOpen, onToggle, onNewChat, onOpenSettings }: Sideb
                             )}
                         </div>
 
-                        {/* Footer */}
-                        <div className="border-t p-3 space-y-2">
-                            <button
-                                onClick={toggleTheme}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors"
-                            >
-                                {theme === "dark" ? (
-                                    <Sun className="w-4 h-4" />
-                                ) : (
-                                    <Moon className="w-4 h-4" />
-                                )}
-                                <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
-                            </button>
-                            <button
-                                onClick={onOpenSettings}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors"
-                            >
-                                <Settings className="w-4 h-4" />
-                                <span>Settings</span>
-                            </button>
-
-                            {/* User Profile */}
-                            <div className="flex items-center gap-2 px-3 py-2 border-t pt-3 mt-2">
-                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-medium text-sm">
-                                    S
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium truncate">ShuJaat</p>
-                                    <p className="text-[10px] text-muted-foreground">Free plan</p>
-                                </div>
-                            </div>
-                        </div>
                     </motion.aside>
                 )}
             </AnimatePresence>

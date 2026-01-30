@@ -48,37 +48,87 @@ function SidebarComponent({ isOpen, onToggle, onNewChat, onOpenSettings }: Sideb
         setTheme(theme === "dark" ? "light" : "dark");
     }, [theme, setTheme]);
 
-    const sidebarVariants = {
-        open: { width: 280, opacity: 1 },
-        closed: { width: 0, opacity: 0 },
-    };
-
     return (
-        <>
-            {/* Collapsed toggle button */}
-            {!isOpen && (
-                <motion.button
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    onClick={onToggle}
-                    className="fixed left-4 top-4 z-40 p-2 bg-card border rounded-xl shadow-lg hover:bg-muted transition-colors"
-                    title="Open sidebar"
-                >
-                    <PanelLeft className="w-5 h-5" />
-                </motion.button>
-            )}
+        <div className="h-full flex shrink-0">
+            {/* Collapsed Icon Bar - Shows when sidebar is closed */}
+            <AnimatePresence>
+                {!isOpen && (
+                    <motion.div
+                        initial={{ width: 0, opacity: 0 }}
+                        animate={{ width: 48, opacity: 1 }}
+                        exit={{ width: 0, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="h-full flex flex-col items-center py-3 bg-card border-r overflow-hidden"
+                    >
+                        {/* Toggle Button */}
+                        <button
+                            onClick={onToggle}
+                            className="p-2 mb-2 hover:bg-muted rounded-lg transition-colors"
+                            title="Expand sidebar"
+                        >
+                            <PanelLeft className="w-5 h-5" />
+                        </button>
 
-            {/* Sidebar */}
+                        {/* New Chat */}
+                        <button
+                            onClick={handleNewChat}
+                            className="p-2 mb-1 hover:bg-muted rounded-lg transition-colors"
+                            title="New chat"
+                        >
+                            <Plus className="w-5 h-5" />
+                        </button>
+
+                        {/* Chats */}
+                        <button
+                            onClick={onToggle}
+                            className="p-2 mb-1 hover:bg-muted rounded-lg transition-colors"
+                            title="View chats"
+                        >
+                            <MessageSquare className="w-5 h-5" />
+                        </button>
+
+                        {/* Spacer */}
+                        <div className="flex-1" />
+
+                        {/* Theme Toggle */}
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2 mb-1 hover:bg-muted rounded-lg transition-colors"
+                            title={theme === "dark" ? "Light mode" : "Dark mode"}
+                        >
+                            {theme === "dark" ? (
+                                <Sun className="w-5 h-5" />
+                            ) : (
+                                <Moon className="w-5 h-5" />
+                            )}
+                        </button>
+
+                        {/* Settings */}
+                        <button
+                            onClick={onOpenSettings}
+                            className="p-2 mb-2 hover:bg-muted rounded-lg transition-colors"
+                            title="Settings"
+                        >
+                            <Settings className="w-5 h-5" />
+                        </button>
+
+                        {/* User Avatar */}
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-medium text-sm">
+                            S
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Expanded Sidebar */}
             <AnimatePresence mode="wait">
                 {isOpen && (
                     <motion.aside
-                        variants={sidebarVariants}
-                        initial="closed"
-                        animate="open"
-                        exit="closed"
+                        initial={{ width: 0, opacity: 0 }}
+                        animate={{ width: 280, opacity: 1 }}
+                        exit={{ width: 0, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="h-full bg-card border-r flex flex-col overflow-hidden shrink-0"
+                        className="h-full bg-card border-r flex flex-col overflow-hidden"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b">
@@ -110,10 +160,18 @@ function SidebarComponent({ isOpen, onToggle, onNewChat, onOpenSettings }: Sideb
                             </motion.button>
                         </div>
 
+                        {/* Navigation Items */}
+                        <div className="px-3 space-y-1">
+                            <button className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors bg-muted">
+                                <MessageSquare className="w-4 h-4" />
+                                <span>Chats</span>
+                            </button>
+                        </div>
+
                         {/* Conversations List */}
-                        <div className="flex-1 overflow-y-auto px-3 pb-3">
+                        <div className="flex-1 overflow-y-auto px-3 pb-3 mt-2">
                             <p className="text-xs font-medium text-muted-foreground px-2 mb-2">
-                                Recent Conversations
+                                Recents
                             </p>
 
                             {conversations.length === 0 ? (
@@ -130,8 +188,8 @@ function SidebarComponent({ isOpen, onToggle, onNewChat, onOpenSettings }: Sideb
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             className={`group relative flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${activeConversationId === conv.id
-                                                    ? "bg-muted"
-                                                    : "hover:bg-muted/50"
+                                                ? "bg-muted"
+                                                : "hover:bg-muted/50"
                                                 }`}
                                             onClick={() => setActiveConversation(conv.id)}
                                         >
@@ -177,11 +235,22 @@ function SidebarComponent({ isOpen, onToggle, onNewChat, onOpenSettings }: Sideb
                                 <Settings className="w-4 h-4" />
                                 <span>Settings</span>
                             </button>
+
+                            {/* User Profile */}
+                            <div className="flex items-center gap-2 px-3 py-2 border-t pt-3 mt-2">
+                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-medium text-sm">
+                                    S
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">ShuJaat</p>
+                                    <p className="text-[10px] text-muted-foreground">Free plan</p>
+                                </div>
+                            </div>
                         </div>
                     </motion.aside>
                 )}
             </AnimatePresence>
-        </>
+        </div>
     );
 }
 

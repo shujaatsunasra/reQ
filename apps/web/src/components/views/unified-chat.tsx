@@ -256,6 +256,31 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const initialQueryProcessed = useRef(false);
 
+  // Sync messages when active conversation changes
+  useEffect(() => {
+    if (activeConversationId) {
+      const activeConv = conversations.find(c => c.id === activeConversationId);
+      if (activeConv && activeConv.messages) {
+        // Convert store messages to local Message format
+        const loadedMessages: Message[] = activeConv.messages.map((m: any) => ({
+          id: m.id || crypto.randomUUID(),
+          role: m.role,
+          content: m.content,
+          timestamp: new Date(m.timestamp || Date.now()),
+          artifacts: m.artifacts,
+          metadata: m.metadata,
+        }));
+        setMessages(loadedMessages);
+        // Reset artifact panel
+        setActiveArtifact(null);
+        setArtifactPanelOpen(false);
+      }
+    } else {
+      // No active conversation - clear messages
+      setMessages([]);
+    }
+  }, [activeConversationId, conversations]);
+
   // Initialize
   useEffect(() => {
     setMapReady(true);
@@ -1018,25 +1043,229 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
                 </div>
               )}
             </div>
-
-            {/* Panel Footer - Controls */}
+            {/* Selected Float Details Panel - Shows when a float is clicked */}
             {activeArtifact.type === 'map' && (
-              <div className="border-t p-3 bg-background/50 shrink-0">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-[10px]">
-                      <span className="text-blue-400">Cold</span>
-                      <div className="w-16 h-2 rounded-full" style={{
-                        background: 'linear-gradient(to right, hsl(240, 80%, 50%), hsl(180, 80%, 50%), hsl(120, 80%, 50%), hsl(60, 80%, 50%), hsl(0, 80%, 50%)'
-                      }} />
-                      <span className="text-red-400">Hot</span>
+              <AnimatePresence>
+                {selectedFloat ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    className="border-t bg-card/95 backdrop-blur-sm shrink-0"
+                  >
+                    {/* Float Header */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <MapPin className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">Float {selectedFloat.id}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {selectedFloat.lat.toFixed(3)}°, {selectedFloat.lng.toFixed(3)}°
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setSelectedFloat(null)}
+                        className="p-1.5 hover:bg-muted rounded-lg transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {(activeArtifact.data as FloatData[]).length} floats
-                  </span>
-                </div>
-              </div>
+
+                    {/* Measurements Grid */}
+                    <div className="grid grid-cols-3 gap-px bg-border/50">
+                      <div className="px-4 py-3 bg-card">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Thermometer className="w-4 h-4 text-orange-400" />
+                          <span className="text-xs text-muted-foreground">Temperature</span>
+                        </div>
+                        <div className="text-lg font-semibold text-orange-400">
+                          {selectedFloat.temp?.toFixed(1) ?? '--'}°C
+                        </div>
+                      </div>
+                      <div className="px-4 py-3 bg-card">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Droplets className="w-4 h-4 text-purple-400" />
+                          <span className="text-xs text-muted-foreground">Salinity</span>
+                        </div>
+                        <div className="text-lg font-semibold text-purple-400">
+                          {selectedFloat.salinity?.toFixed(2) ?? '--'} PSU
+                        </div>
+                      </div>
+                      <div className="px-4 py-3 bg-card">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Calendar className="w-4 h-4 text-blue-400" />
+                          <span className="text-xs text-muted-foreground">Date</span>
+                        </div>
+                        <div className="text-sm font-semibold text-blue-400">
+                          {selectedFloat.date ? new Date(selectedFloat.date).toLocaleDateString() : '--'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="px-4 py-3 flex gap-2">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          const query = `Show depth profile for float ${selectedFloat.id}`;
+                          setSelectedFloat(null);
+                          setArtifactPanelOpen(false);
+                          handleQuerySubmit(query);
+                        }}
+                        className="flex-1 px-3 py-2 text-xs font-medium bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <BarChart2 className="w-4 h-4" />
+                        View Profile
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          const query = `Show trajectory for float ${selectedFloat.id}`;
+                          setSelectedFloat(null);
+                          setArtifactPanelOpen(false);
+                          handleQuerySubmit(query);
+                        }}
+                        className="flex-1 px-3 py-2 text-xs font-medium bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <TrendingUp className="w-4 h-4" />
+                        Trajectory
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          const data = JSON.stringify(selectedFloat, null, 2);
+                          navigator.clipboard.writeText(data);
+                          toast.success(`Copied Float ${selectedFloat.id} data to clipboard`);
+                        }}
+                        className="flex-1 px-3 py-2 text-xs font-medium bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Export
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="border-t bg-card shrink-0"
+                  >
+                    {/* Quick Stats Grid */}
+                    {(() => {
+                      const floats = activeArtifact.data as FloatData[];
+                      const temps = floats.filter(f => f.temp != null).map(f => f.temp!);
+                      const sals = floats.filter(f => f.salinity != null).map(f => f.salinity!);
+                      const avgTemp = temps.length > 0 ? (temps.reduce((a, b) => a + b, 0) / temps.length) : null;
+                      const avgSal = sals.length > 0 ? (sals.reduce((a, b) => a + b, 0) / sals.length) : null;
+                      const minTemp = temps.length > 0 ? Math.min(...temps) : null;
+                      const maxTemp = temps.length > 0 ? Math.max(...temps) : null;
+
+                      return (
+                        <>
+                          {/* Stats Row */}
+                          <div className="grid grid-cols-4 gap-px bg-border/30">
+                            <div className="px-3 py-3 bg-card text-center">
+                              <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Floats</div>
+                              <div className="text-lg font-bold text-foreground">{floats.length}</div>
+                            </div>
+                            <div className="px-3 py-3 bg-card text-center">
+                              <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Avg Temp</div>
+                              <div className="text-lg font-bold text-orange-400">{avgTemp?.toFixed(1) ?? '--'}°C</div>
+                            </div>
+                            <div className="px-3 py-3 bg-card text-center">
+                              <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Avg Salinity</div>
+                              <div className="text-lg font-bold text-purple-400">{avgSal?.toFixed(1) ?? '--'} PSU</div>
+                            </div>
+                            <div className="px-3 py-3 bg-card text-center">
+                              <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Temp Range</div>
+                              <div className="text-sm font-bold text-blue-400">
+                                {minTemp != null ? `${minTemp.toFixed(0)}° - ${maxTemp?.toFixed(0)}°` : '--'}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Quick Actions / Suggested Queries */}
+                          <div className="px-3 py-2 border-t border-border/30">
+                            <div className="text-[10px] text-muted-foreground mb-2 uppercase tracking-wide">Quick Actions</div>
+                            <div className="flex flex-wrap gap-1.5">
+                              <motion.button
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                onClick={() => {
+                                  setArtifactPanelOpen(false);
+                                  handleQuerySubmit("Show temperature trends for these floats");
+                                }}
+                                className="px-2.5 py-1.5 text-[11px] font-medium bg-orange-500/10 text-orange-400 rounded-lg hover:bg-orange-500/20 transition-colors flex items-center gap-1.5"
+                              >
+                                <Thermometer className="w-3 h-3" />
+                                Temperature Trends
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                onClick={() => {
+                                  setArtifactPanelOpen(false);
+                                  handleQuerySubmit("Show salinity analysis for these floats");
+                                }}
+                                className="px-2.5 py-1.5 text-[11px] font-medium bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-colors flex items-center gap-1.5"
+                              >
+                                <Droplets className="w-3 h-3" />
+                                Salinity Analysis
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                onClick={() => {
+                                  setArtifactPanelOpen(false);
+                                  handleQuerySubmit("Detect anomalies in this data");
+                                }}
+                                className="px-2.5 py-1.5 text-[11px] font-medium bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors flex items-center gap-1.5"
+                              >
+                                <AlertCircle className="w-3 h-3" />
+                                Find Anomalies
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                onClick={() => {
+                                  setArtifactPanelOpen(false);
+                                  handleQuerySubmit("Show depth profiles for these floats");
+                                }}
+                                className="px-2.5 py-1.5 text-[11px] font-medium bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-colors flex items-center gap-1.5"
+                              >
+                                <Activity className="w-3 h-3" />
+                                Depth Profiles
+                              </motion.button>
+                            </div>
+                          </div>
+
+                          {/* Legend + Hint */}
+                          <div className="px-3 py-2 border-t border-border/30 flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 text-[10px]">
+                              <span className="text-blue-400 font-medium">Cold</span>
+                              <div className="w-16 h-1.5 rounded-full" style={{
+                                background: 'linear-gradient(to right, #4da6ff, #b388ff, #ff6b8a)'
+                              }} />
+                              <span className="text-pink-400 font-medium">Hot</span>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              Click a point for details
+                            </span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             )}
           </ResizablePanel>
         )}

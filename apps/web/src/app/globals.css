@@ -14,26 +14,26 @@
     --card-foreground: 240 10% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 10%;
-    
+
     /* Primary - Google Blue */
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    
+
     --secondary: 220 14% 96%;
     --secondary-foreground: 240 10% 10%;
     --muted: 220 14% 96%;
     --muted-foreground: 220 10% 46%;
-    
+
     --accent: 220 14% 96%;
     --accent-foreground: 240 10% 10%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    
+
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 217 91% 60%;
     --radius: 0.75rem;
-    
+
     /* Rainbow gradient colors */
     --gradient-blue: #4285f4;
     --gradient-red: #ea4335;
@@ -48,25 +48,25 @@
     --card-foreground: 220 14% 96%;
     --popover: 224 25% 8%;
     --popover-foreground: 220 14% 96%;
-    
+
     /* Primary - Google Blue (brighter for dark mode) */
     --primary: 217 91% 65%;
     --primary-foreground: 224 25% 6%;
-    
+
     --secondary: 224 25% 12%;
     --secondary-foreground: 220 14% 96%;
     --muted: 224 25% 12%;
     --muted-foreground: 220 14% 60%;
-    
+
     --accent: 224 25% 12%;
     --accent-foreground: 220 14% 96%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
-    
+
     --border: 224 25% 14%;
     --input: 224 25% 14%;
     --ring: 217 91% 65%;
-    
+
     /* Rainbow gradient colors */
     --gradient-blue: #4285f4;
     --gradient-red: #ea4335;
@@ -79,11 +79,11 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground antialiased;
   }
-  
+
   /* Smooth focus transitions */
   *:focus-visible {
     @apply outline-none ring-2 ring-primary/30 ring-offset-2 ring-offset-background transition-all;
@@ -119,25 +119,44 @@
   animation: typing 1.2s infinite ease-in-out;
 }
 
-.typing-dot:nth-child(1) { animation-delay: -0.32s; }
-.typing-dot:nth-child(2) { animation-delay: -0.16s; }
-.typing-dot:nth-child(3) { animation-delay: 0s; }
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0s;
+}
 
 @keyframes typing {
-  0%, 80%, 100% { 
-    transform: scale(0.7); 
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0.7);
     opacity: 0.5;
   }
-  40% { 
-    transform: scale(1); 
+
+  40% {
+    transform: scale(1);
     opacity: 1;
   }
 }
 
 /* Pulse animation for loading states */
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .animate-pulse-soft {
@@ -149,18 +168,17 @@
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
 }
 
 .animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    hsl(var(--muted)) 0%,
-    hsl(var(--muted-foreground) / 0.1) 50%,
-    hsl(var(--muted)) 100%
-  );
+  background: linear-gradient(90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
@@ -171,6 +189,7 @@
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -187,6 +206,7 @@
     opacity: 0;
     transform: translateY(16px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -203,6 +223,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -215,12 +236,16 @@
 
 /* Float animation for decorative elements */
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0) rotate(0deg);
   }
+
   25% {
     transform: translateY(-5px) rotate(1deg);
   }
+
   75% {
     transform: translateY(3px) rotate(-1deg);
   }
@@ -232,13 +257,16 @@
 
 /* Glow effect */
 @keyframes glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 5px hsl(var(--primary) / 0.2),
-                0 0 20px hsl(var(--primary) / 0.1);
+      0 0 20px hsl(var(--primary) / 0.1);
   }
+
   50% {
     box-shadow: 0 0 10px hsl(var(--primary) / 0.4),
-                0 0 30px hsl(var(--primary) / 0.2);
+      0 0 30px hsl(var(--primary) / 0.2);
   }
 }
 
@@ -308,7 +336,7 @@
   opacity: 1;
 }
 
-.gradient-border > * {
+.gradient-border>* {
   position: relative;
   background: hsl(var(--card));
   border-radius: inherit;
@@ -316,7 +344,7 @@
 
 /* Rainbow glow effect */
 .gradient-glow {
-  box-shadow: 
+  box-shadow:
     0 0 20px rgba(66, 133, 244, 0.3),
     0 0 40px rgba(234, 67, 53, 0.2),
     0 0 60px rgba(251, 188, 4, 0.1),
@@ -360,14 +388,24 @@
 
 /* Spin animation for gradient borders */
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Gradient shift animation */
 @keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
 }
 
 /* Glass effect */
@@ -403,4 +441,10 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Vertical text for sidebar button */
+.writing-mode-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
 }

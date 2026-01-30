@@ -71,7 +71,7 @@ export default function Home() {
 
   const [pendingQuery, setPendingQuery] = useState<string | null>(null);
   const [showApiModal, setShowApiModal] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tempGroqKey, setTempGroqKey] = useState("");
   const [tempHfKey, setTempHfKey] = useState("");
   const [showGroqKey, setShowGroqKey] = useState(false);
@@ -161,8 +161,8 @@ export default function Home() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${hasApiKey
-                    ? "bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20"
-                    : "bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
+                  ? "bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20"
+                  : "bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
                   }`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

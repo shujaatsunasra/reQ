@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import dynamic from "next/dynamic";
 import {
   Send,
@@ -256,10 +257,15 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const initialQueryProcessed = useRef(false);
+  const previousConversationId = useRef<string | null>(null);
 
-  // Sync messages when active conversation changes
+  // Sync messages when active conversation changes (only when SWITCHING conversations)
   useEffect(() => {
-    if (activeConversationId) {
+    // Only process if this is actually a different conversation
+    const isSwitchingConversation = previousConversationId.current !== null &&
+      previousConversationId.current !== activeConversationId;
+
+    if (activeConversationId && isSwitchingConversation) {
       const activeConv = conversations.find(c => c.id === activeConversationId);
       if (activeConv && activeConv.messages) {
         // Convert store messages to local Message format
@@ -272,15 +278,18 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
           metadata: m.metadata,
         }));
         setMessages(loadedMessages);
-        // Reset artifact panel
+        // Only reset artifact panel when switching to a different conversation
         setActiveArtifact(null);
         setArtifactPanelOpen(false);
       }
-    } else {
+    } else if (!activeConversationId) {
       // No active conversation - clear messages
       setMessages([]);
     }
-  }, [activeConversationId, conversations]);
+
+    // Track the current conversation ID for next comparison
+    previousConversationId.current = activeConversationId;
+  }, [activeConversationId]); // Only depend on activeConversationId, not conversations
 
   // Initialize
   useEffect(() => {
@@ -709,7 +718,43 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
                         {!message.isTyping && (
                           <>
                             <div className="text-sm leading-relaxed text-foreground prose prose-sm dark:prose-invert max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-headings:my-3">
-                              <ReactMarkdown>
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                  table: ({ children }) => (
+                                    <div className="my-4 overflow-x-auto rounded-lg border border-border">
+                                      <table className="w-full border-collapse text-sm">
+                                        {children}
+                                      </table>
+                                    </div>
+                                  ),
+                                  thead: ({ children }) => (
+                                    <thead className="bg-muted/50">
+                                      {children}
+                                    </thead>
+                                  ),
+                                  tbody: ({ children }) => (
+                                    <tbody className="divide-y divide-border">
+                                      {children}
+                                    </tbody>
+                                  ),
+                                  tr: ({ children }) => (
+                                    <tr className="hover:bg-muted/30 transition-colors">
+                                      {children}
+                                    </tr>
+                                  ),
+                                  th: ({ children }) => (
+                                    <th className="px-3 py-2 text-left font-semibold text-foreground border-b border-border">
+                                      {children}
+                                    </th>
+                                  ),
+                                  td: ({ children }) => (
+                                    <td className="px-3 py-2 text-foreground/80">
+                                      {children}
+                                    </td>
+                                  ),
+                                }}
+                              >
                                 {message.content}
                               </ReactMarkdown>
                             </div>

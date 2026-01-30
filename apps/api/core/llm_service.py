@@ -550,6 +550,7 @@ class LLMService:
 4. **Never invent patterns**: Only discuss statistics from the actual data provided.
 5. **NEVER mention technical tools**: Do NOT mention Matplotlib, Plotly, Python, GMT, libraries, or any implementation details. Just describe the data and insights.
 6. **Use conversation history**: Refer to previous messages to maintain context and provide relevant follow-up responses.
+7. **Be specific**: Use actual numbers from the data, not vague generalities.
 
 ## For Casual Messages (greetings, how are you, etc.)
 - Respond briefly and naturally
@@ -562,10 +563,22 @@ class LLMService:
 - Connect to real oceanographic phenomena when relevant
 - If visualizations are shown, describe what they reveal - NOT how they were made
 
+## WHEN USER ASKS FOR TABLES
+When the user asks for "tables", "table format", "tabular data", "show me the data", or similar:
+- Format the response data as a proper markdown table
+- Use this format:
+  | Column 1 | Column 2 | Column 3 |
+  |----------|----------|----------|
+  | Value 1  | Value 2  | Value 3  |
+- Include relevant columns like Float ID, Latitude, Longitude, Temperature, Salinity, Depth, Date
+- Show up to 10-15 rows of actual data from the profiles
+- Add a summary below the table
+
 ## For Follow-up Questions
 - Reference previous discussion naturally
 - Build on previous findings
 - Don't repeat information already given
+- If user asks "what have we explored", summarize the conversation topics briefly
 
 ## FORBIDDEN Topics (NEVER mention these)
 - Library names (Matplotlib, Plotly, Recharts, D3, etc.)
@@ -576,7 +589,8 @@ class LLMService:
 
 ## Response Length
 - Casual messages: 1-2 sentences max
-- Data queries: 2-4 sentences with key findings"""
+- Data queries: 2-4 sentences with key findings
+- Table requests: Show actual data table + brief summary"""
 
         parts = [system_prompt]
         
@@ -649,16 +663,32 @@ class LLMService:
                     if lats and lngs:
                         parts.append(f"• Geographic extent: {min(lats):.1f}°N to {max(lats):.1f}°N, {min(lngs):.1f}°E to {max(lngs):.1f}°E")
                 
-                # Sample profiles for specificity
-                if count <= 5:
-                    for p in profiles[:3]:
+                # Sample profiles for table generation (include more data for table requests)
+                sample_count = min(15, count)  # Up to 15 samples for tables
+                if sample_count > 0:
+                    parts.append(f"\n• Sample data (first {sample_count} profiles):")
+                    for p in profiles[:sample_count]:
                         lat = p.get('latitude', p.get('lat'))
                         lon = p.get('longitude', p.get('lng'))
                         temp = p.get('temp', p.get('temperature'))
+                        sal = p.get('salinity')
+                        depth = p.get('depth')
                         float_id = p.get('float_id', p.get('id', 'unknown'))
-                        loc = f"at ({lat:.1f}°, {lon:.1f}°)" if lat and lon else ""
-                        temp_str = f", {temp:.1f}°C" if temp else ""
-                        parts.append(f"  - Float {float_id} {loc}{temp_str}")
+                        date = p.get('date', p.get('datetime', ''))
+                        
+                        # Build row description
+                        row = f"  - Float {float_id}"
+                        if lat and lon:
+                            row += f" | ({lat:.2f}°, {lon:.2f}°)"
+                        if temp:
+                            row += f" | {temp:.1f}°C"
+                        if sal:
+                            row += f" | {sal:.1f} PSU"
+                        if depth:
+                            row += f" | {depth}m"
+                        if date:
+                            row += f" | {str(date)[:10]}"
+                        parts.append(row)
         
         if "count" in data:
             parts.append(f"• Total records: {data['count']}")

@@ -65,7 +65,6 @@ interface AppState {
   createConversation: () => string;
   setActiveConversation: (id: string) => void;
   addMessage: (conversationId: string, message: Omit<Message, "id" | "timestamp">) => void;
-  updateConversationTitle: (conversationId: string, title: string) => void;
   deleteConversation: (id: string) => void;
 
   // Results Actions
@@ -147,16 +146,6 @@ export const useAppStore = create<AppState>()(
                     ? message.content.slice(0, 50)
                     : conv.title,
               }
-              : conv
-          ),
-        }));
-      },
-
-      updateConversationTitle: (conversationId, title) => {
-        set((state) => ({
-          conversations: state.conversations.map((conv) =>
-            conv.id === conversationId
-              ? { ...conv, title, updatedAt: new Date() }
               : conv
           ),
         }));

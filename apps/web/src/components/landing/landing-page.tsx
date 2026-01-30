@@ -93,8 +93,8 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
           transition={{ delay: 0.2 }}
           onClick={() => setShowApiSetup(true)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${hasApiKey
-              ? "bg-green-500/10 text-green-600 dark:text-green-400"
-              : "bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
+            ? "bg-green-500/10 text-green-600 dark:text-green-400"
+            : "bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
             }`}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -138,57 +138,82 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
           </p>
         </motion.div>
 
-        {/* Search input */}
+        {/* Search input with Gemini-style animated gradient border */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.15 }}
           className="w-full max-w-2xl mb-8"
         >
-          <motion.div
-            className={`relative group transition-all duration-300 ${inputFocused ? 'scale-[1.01]' : ''
-              }`}
-            animate={{
-              boxShadow: inputFocused
-                ? '0 8px 40px rgba(0,0,0,0.12)'
-                : '0 4px 20px rgba(0,0,0,0.06)'
-            }}
-            style={{ borderRadius: '1rem' }}
-          >
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onFocus={() => setInputFocused(true)}
-              onBlur={() => setInputFocused(false)}
-              placeholder="Ask about ARGO floats, temperature, salinity..."
-              className={`w-full px-6 py-5 pr-16 bg-card border-2 rounded-2xl text-base font-medium focus:outline-none transition-all duration-200 shadow-lg ${inputFocused
-                  ? 'border-primary shadow-xl shadow-primary/10'
-                  : 'border-border hover:border-primary/30 hover:shadow-xl'
+          <div className={`relative group transition-all duration-500 ${inputFocused ? 'scale-[1.01]' : ''}`}>
+            {/* Animated gradient border - only visible on focus */}
+            <div
+              className={`absolute -inset-[2px] rounded-2xl transition-opacity duration-300 overflow-hidden ${inputFocused ? 'opacity-100' : 'opacity-0'
                 }`}
-            />
-            <motion.button
-              onClick={handleSubmit}
-              disabled={!query.trim()}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/20"
             >
-              <ArrowRight className="w-5 h-5" />
-            </motion.button>
-          </motion.div>
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: 'conic-gradient(from 0deg, #4285f4, #34a853, #fbbc04, #ea4335, #4285f4)',
+                  animation: 'spin 3s linear infinite',
+                }}
+              />
+            </div>
+
+            {/* Inner container */}
+            <div className="relative bg-card rounded-2xl">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onFocus={() => setInputFocused(true)}
+                onBlur={() => setInputFocused(false)}
+                placeholder="Ask about ARGO floats, temperature, salinity..."
+                className={`w-full px-6 py-5 pr-20 bg-card rounded-2xl text-base font-medium focus:outline-none transition-all duration-300 ${inputFocused
+                    ? 'border-transparent'
+                    : 'border-2 border-border hover:border-primary/30'
+                  }`}
+              />
+              <motion.button
+                onClick={handleSubmit}
+                disabled={!query.trim()}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/20"
+              >
+                <ArrowRight className="w-5 h-5" />
+              </motion.button>
+            </div>
+
+            {/* Glow effect underneath */}
+            <div
+              className={`absolute inset-x-8 -bottom-3 h-10 rounded-full blur-2xl transition-opacity duration-500 ${inputFocused ? 'opacity-50' : 'opacity-0'
+                }`}
+              style={{
+                background: 'linear-gradient(90deg, #4285f4, #ea4335, #fbbc04, #34a853)',
+              }}
+            />
+          </div>
 
           {!hasApiKey && (
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-xs text-amber-500 mt-3 text-center"
+              className="text-xs text-amber-500 mt-4 text-center"
             >
               Add your API key to get started →
             </motion.p>
           )}
+
+          {/* Animation keyframes */}
+          <style jsx global>{`
+            @keyframes spin {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
         </motion.div>
 
         {/* Quick prompts */}

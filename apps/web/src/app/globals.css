@@ -7,7 +7,7 @@
 
 @layer base {
   :root {
-    /* Modern minimal palette */
+    /* Modern minimal palette with rainbow accent */
     --background: 0 0% 100%;
     --foreground: 240 10% 10%;
     --card: 0 0% 100%;
@@ -15,7 +15,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 10%;
     
-    --primary: 187 85% 43%;
+    /* Primary - Google Blue */
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
     
     --secondary: 220 14% 96%;
@@ -30,8 +31,14 @@
     
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 187 85% 43%;
+    --ring: 217 91% 60%;
     --radius: 0.75rem;
+    
+    /* Rainbow gradient colors */
+    --gradient-blue: #4285f4;
+    --gradient-red: #ea4335;
+    --gradient-yellow: #fbbc04;
+    --gradient-green: #34a853;
   }
 
   .dark {
@@ -42,7 +49,8 @@
     --popover: 224 25% 8%;
     --popover-foreground: 220 14% 96%;
     
-    --primary: 187 85% 50%;
+    /* Primary - Google Blue (brighter for dark mode) */
+    --primary: 217 91% 65%;
     --primary-foreground: 224 25% 6%;
     
     --secondary: 224 25% 12%;
@@ -57,7 +65,13 @@
     
     --border: 224 25% 14%;
     --input: 224 25% 14%;
-    --ring: 187 85% 50%;
+    --ring: 217 91% 65%;
+    
+    /* Rainbow gradient colors */
+    --gradient-blue: #4285f4;
+    --gradient-red: #ea4335;
+    --gradient-yellow: #fbbc04;
+    --gradient-green: #34a853;
   }
 }
 
@@ -267,9 +281,93 @@
   transform: scale(0.98);
 }
 
-/* Gradient text */
+/* Gradient text - Rainbow style */
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70;
+  @apply bg-clip-text text-transparent;
+  background-image: linear-gradient(90deg, var(--gradient-blue), var(--gradient-red), var(--gradient-yellow), var(--gradient-green));
+}
+
+/* Rainbow gradient border with animation */
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, var(--gradient-blue), var(--gradient-green), var(--gradient-yellow), var(--gradient-red), var(--gradient-blue));
+  animation: spin 3s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gradient-border:hover::before,
+.gradient-border:focus-within::before {
+  opacity: 1;
+}
+
+.gradient-border > * {
+  position: relative;
+  background: hsl(var(--card));
+  border-radius: inherit;
+}
+
+/* Rainbow glow effect */
+.gradient-glow {
+  box-shadow: 
+    0 0 20px rgba(66, 133, 244, 0.3),
+    0 0 40px rgba(234, 67, 53, 0.2),
+    0 0 60px rgba(251, 188, 4, 0.1),
+    0 0 80px rgba(52, 168, 83, 0.05);
+}
+
+/* Animated rainbow underline */
+.rainbow-underline {
+  position: relative;
+}
+
+.rainbow-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gradient-blue), var(--gradient-red), var(--gradient-yellow), var(--gradient-green));
+  background-size: 200% 100%;
+  animation: gradient-shift 2s linear infinite;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.rainbow-underline:hover::after {
+  transform: scaleX(1);
+}
+
+/* Gradient button style */
+.btn-gradient {
+  background: linear-gradient(90deg, var(--gradient-blue), var(--gradient-green));
+  background-size: 200% 100%;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+  background-position: 100% 0;
+  box-shadow: 0 4px 20px rgba(66, 133, 244, 0.4);
+}
+
+/* Spin animation for gradient borders */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Gradient shift animation */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
 }
 
 /* Glass effect */

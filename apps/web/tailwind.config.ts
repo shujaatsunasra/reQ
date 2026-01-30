@@ -48,6 +48,18 @@ const config: Config = {
           900: "#0c4a6e",
           950: "#082f49",
         },
+        // Rainbow/Gemini gradient colors
+        gradient: {
+          blue: "#4285f4",
+          red: "#ea4335",
+          yellow: "#fbbc04",
+          green: "#34a853",
+        },
+      },
+      backgroundImage: {
+        'gradient-rainbow': 'linear-gradient(90deg, #4285f4, #ea4335, #fbbc04, #34a853)',
+        'gradient-rainbow-r': 'linear-gradient(90deg, #4285f4, #34a853)',
+        'gradient-conic-rainbow': 'conic-gradient(from 0deg, #4285f4, #34a853, #fbbc04, #ea4335, #4285f4)',
       },
       borderRadius: {
         lg: "var(--radius)",

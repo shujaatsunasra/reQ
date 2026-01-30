@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, BarChart3, Pencil, Layers, Clock, Maximize2, HelpCircle } from 'lucide-react';
+import { FloatHoverCard } from './float-hover-card';
 
 // Lazy load map components to avoid SSR issues
 const MapContainer = dynamic(
@@ -67,6 +68,11 @@ interface LeafletMapProps {
   };
   height?: string | number;
   className?: string;
+  // Callbacks for Quick Actions
+  onShowProfile?: (floatId: string) => void;
+  onShowTrajectory?: (floatId: string) => void;
+  onGoToFloatPage?: (floatId: string) => void;
+  onAddToCompare?: (floatId: string) => void;
 }
 
 // Color scales for oceanographic data
@@ -96,11 +102,22 @@ const getDepthColor = (pressure: number): string => {
   return '#0d2520';
 };
 
-export function LeafletMap({ data, height = 500, className = '' }: LeafletMapProps) {
+export function LeafletMap({
+  data,
+  height = 500,
+  className = '',
+  onShowProfile,
+  onShowTrajectory,
+  onGoToFloatPage,
+  onAddToCompare
+}: LeafletMapProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [selectedFloat, setSelectedFloat] = useState<string | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<FloatPosition | null>(null);
+  const [clickedPoint, setClickedPoint] = useState<FloatPosition | null>(null);
+  const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
   const mapRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Default center on Pacific Ocean
   const center = data.center || [0, 180];
@@ -155,6 +172,31 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
     setIsLoaded(true);
   }, []);
 
+  // Handle marker click - show FloatHoverCard
+  const handleMarkerClick = useCallback((point: FloatPosition, event: any) => {
+    // Get click position relative to container
+    if (containerRef.current && event.originalEvent) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = event.originalEvent.clientX - rect.left;
+      const y = event.originalEvent.clientY - rect.top;
+
+      // Adjust position so card doesn't go off screen
+      const cardWidth = 288; // w-72 = 18rem = 288px
+      const cardHeight = 500; // approximate height
+      const adjustedX = Math.min(x, rect.width - cardWidth - 20);
+      const adjustedY = Math.min(y, rect.height - cardHeight - 20);
+
+      setClickPosition({ x: Math.max(20, adjustedX), y: Math.max(20, adjustedY) });
+    }
+    setClickedPoint(point);
+  }, []);
+
+  // Close hover card
+  const handleCloseHoverCard = useCallback(() => {
+    setClickedPoint(null);
+    setClickPosition(null);
+  }, []);
+
   if (!isLoaded) {
     return (
       <div
@@ -174,7 +216,7 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
   }
 
   return (
-    <div className={`relative ${className}`} style={{ height }}>
+    <div ref={containerRef} className={`relative ${className}`} style={{ height }} onClick={(e) => { if (e.target === e.currentTarget) handleCloseHoverCard(); }}>
       <MapContainer
         ref={mapRef}
         center={center}
@@ -220,6 +262,7 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
                   color={pos.is_anomaly ? '#ffffff' : trajectoryColors[trajectory.float_id]}
                   weight={pos.is_anomaly ? 3 : 1}
                   eventHandlers={{
+                    click: (e) => handleMarkerClick(pos, e),
                     mouseover: () => setHoveredPoint(pos),
                     mouseout: () => setHoveredPoint(null),
                   }}
@@ -292,73 +335,42 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
             fillOpacity={point.is_anomaly ? 1 : 0.8}
             color={point.is_anomaly ? '#ffffff' : '#fff'}
             weight={point.is_anomaly ? 3 : 1}
+            eventHandlers={{
+              click: (e) => handleMarkerClick(point, e),
+            }}
           >
-            <Popup>
-              <div className="text-sm">
-                <div className="font-semibold mb-1">
-                  {point.float_id}
-                  {point.is_anomaly && (
-                    <span className="ml-1 px-1 py-0.5 bg-red-500 text-white text-[10px] rounded">ANOMALY</span>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                  <span className="text-gray-500">Cycle:</span>
-                  <span>{point.cycle_number}</span>
-                  <span className="text-gray-500">Date:</span>
-                  <span>{new Date(point.timestamp).toLocaleDateString()}</span>
-                  {point.temperature && (
-                    <>
-                      <span className="text-gray-500">Temp:</span>
-                      <span>{point.temperature.toFixed(2)}°C</span>
-                    </>
-                  )}
-                  {point.salinity && (
-                    <>
-                      <span className="text-gray-500">Salinity:</span>
-                      <span>{point.salinity.toFixed(2)} PSU</span>
-                    </>
-                  )}
-                  {point.pressure && (
-                    <>
-                      <span className="text-gray-500">Depth:</span>
-                      <span>{point.pressure.toFixed(0)} dbar</span>
-                    </>
-                  )}
-                </div>
-                {point.is_anomaly && point.anomaly_type && (
-                  <div className="mt-2 p-1 bg-red-100 text-red-700 rounded text-xs">
-                    ⚠️ {point.anomaly_type.charAt(0).toUpperCase() + point.anomaly_type.slice(1)} anomaly
-                    {point.anomaly_score && ` (${Math.round(point.anomaly_score * 100)}% severity)`}
-                  </div>
-                )}
+            <Tooltip>
+              <div className="text-xs">
+                <div className="font-semibold">{point.float_id}</div>
+                <div>{point.temperature?.toFixed(1)}°C • {point.salinity?.toFixed(1)} PSU</div>
               </div>
-            </Popup>
+            </Tooltip>
           </CircleMarker>
         ))}
       </MapContainer>
 
-      {/* Floating Map Toolbar - Right side */}
+      {/* Floating Map Toolbar - Left side, vertical */}
       <motion.div
-        className="absolute top-4 right-4 flex gap-2 z-[1000]"
-        initial={{ opacity: 0, x: 20 }}
+        className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-[1000]"
+        initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
       >
         {[
-          { icon: Search, label: 'Search' },
-          { icon: Filter, label: 'Filter' },
-          { icon: BarChart3, label: 'Charts' },
-          { icon: Pencil, label: 'Draw' },
-          { icon: Layers, label: 'Layers' },
-          { icon: Clock, label: 'Time' },
+          { icon: Search, label: 'Search floats' },
+          { icon: Filter, label: 'Filter data' },
+          { icon: BarChart3, label: 'View charts' },
+          { icon: Pencil, label: 'Draw/annotate' },
+          { icon: Layers, label: 'Toggle layers' },
+          { icon: Clock, label: 'Time slider' },
           { icon: Maximize2, label: 'Fullscreen' },
           { icon: HelpCircle, label: 'Help' },
         ].map(({ icon: Icon, label }) => (
           <motion.button
             key={label}
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.1, x: 4 }}
             whileTap={{ scale: 0.95 }}
-            className="w-10 h-10 rounded-full bg-gray-800/80 backdrop-blur-sm flex items-center justify-center text-gray-300 hover:bg-gray-700/80 hover:text-white transition-colors shadow-lg"
+            className="w-10 h-10 rounded-xl bg-gray-900/90 backdrop-blur-sm flex items-center justify-center text-gray-300 hover:bg-primary/90 hover:text-white transition-colors shadow-lg border border-gray-700/50"
             title={label}
           >
             <Icon className="w-5 h-5" />
@@ -459,6 +471,50 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
               </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* FloatHoverCard overlay - appears on marker click */}
+      <AnimatePresence>
+        {clickedPoint && clickPosition && (
+          <div
+            className="absolute z-[2000]"
+            style={{ left: clickPosition.x, top: clickPosition.y }}
+          >
+            <FloatHoverCard
+              data={{
+                float_id: clickedPoint.float_id,
+                cycle_number: clickedPoint.cycle_number,
+                lat: clickedPoint.lat,
+                lng: clickedPoint.lon,
+                temperature: clickedPoint.temperature,
+                salinity: clickedPoint.salinity,
+                depth: clickedPoint.pressure,
+                date: clickedPoint.timestamp,
+                qc_flag: (clickedPoint as any).qc_flag,
+                is_anomaly: clickedPoint.is_anomaly,
+                anomaly_type: clickedPoint.anomaly_type ?? undefined,
+                anomaly_score: clickedPoint.anomaly_score,
+              }}
+              onClose={handleCloseHoverCard}
+              onShowProfile={(floatId) => {
+                onShowProfile?.(floatId);
+                handleCloseHoverCard();
+              }}
+              onShowTrajectory={(floatId) => {
+                onShowTrajectory?.(floatId);
+                handleCloseHoverCard();
+              }}
+              onGoToFloatPage={(floatId) => {
+                onGoToFloatPage?.(floatId);
+                handleCloseHoverCard();
+              }}
+              onAddToCompare={(floatId) => {
+                onAddToCompare?.(floatId);
+                handleCloseHoverCard();
+              }}
+            />
+          </div>
         )}
       </AnimatePresence>
     </div>

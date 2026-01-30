@@ -1,0 +1,19 @@
+# render.yaml - Render Blueprint for FloatChat API
+# This file deploys the Python API from apps/api directory
+
+services:
+  - type: web
+    name: floatchat-api
+    runtime: python
+    plan: free
+    rootDir: apps/api
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: CORS_ORIGINS
+        value: https://floatchat.vercel.app,http://localhost:3000
+      - key: DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: INFO

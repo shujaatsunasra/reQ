@@ -22,9 +22,9 @@ class Settings(BaseSettings):
     api_port: int = Field(default=8000, alias="API_PORT")
     api_workers: int = Field(default=4, alias="API_WORKERS")
     
-    # CORS
+    # CORS - includes Vercel domains for production
     cors_origins_str: str = Field(
-        default="http://localhost:3000",
+        default="http://localhost:3000,https://*.vercel.app,https://*.vercel.sh",
         alias="CORS_ORIGINS"
     )
     

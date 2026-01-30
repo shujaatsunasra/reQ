@@ -490,14 +490,18 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
     }
   }, [messages, handleQuerySubmit]);
 
-  // Get marker color based on temperature
+  // Get marker color based on temperature - blue/pink palette
   const getMarkerColor = useCallback((float: FloatData): string => {
-    if (float.temp !== undefined) {
-      const normalized = Math.max(0, Math.min(1, (float.temp + 2) / 32));
-      const hue = (1 - normalized) * 240;
-      return `hsl(${hue}, 80%, 50%)`;
+    // Blue/pink palette like reference design
+    if (float.is_anomaly) {
+      return '#ff6b8a'; // Pink for anomalies
     }
-    return "hsl(200, 85%, 43%)";
+    if (float.temp !== undefined) {
+      if (float.temp < 15) return '#4da6ff'; // Cool - blue
+      if (float.temp < 22) return '#b388ff'; // Medium - purple  
+      return '#ff6b8a'; // Warm - pink
+    }
+    return '#4da6ff'; // Default blue
   }, []);
 
   const loading = isLoading || externalLoading;
@@ -644,31 +648,100 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
                               </ReactMarkdown>
                             </div>
 
-                            {/* Artifacts preview */}
+                            {/* Artifacts preview - horizontal tiles */}
                             {message.artifacts && message.artifacts.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mt-3">
-                                {message.artifacts.map((artifact) => (
-                                  <motion.button
-                                    key={artifact.id}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => {
-                                      setActiveArtifact(artifact);
-                                      setArtifactPanelOpen(true);
-                                    }}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-xl border bg-card hover:bg-muted transition-all ${activeArtifact?.id === artifact.id ? 'ring-2 ring-primary' : ''
-                                      }`}
-                                  >
-                                    {artifact.type === 'map' && <Map className="w-4 h-4 text-blue-500" />}
-                                    {artifact.type === 'chart' && <BarChart2 className="w-4 h-4 text-green-500" />}
-                                    {artifact.type === 'table' && <Table2 className="w-4 h-4 text-purple-500" />}
-                                    {artifact.type === 'visualization' && <LineChart className="w-4 h-4 text-amber-500" />}
-                                    <span className="text-xs font-medium">{artifact.title}</span>
-                                    <ChevronRight className="w-3 h-3 text-muted-foreground" />
-                                  </motion.button>
-                                ))}
+                              <div className="flex flex-col gap-2 mt-4">
+                                {message.artifacts.map((artifact) => {
+                                  // Generate dynamic filename based on artifact type
+                                  const getFilename = () => {
+                                    switch (artifact.type) {
+                                      case 'map': return `float_locations_${(artifact.data as any)?.length || 0}.geojson`;
+                                      case 'visualization':
+                                        if (artifact.visualization === 'timeseries') return 'temperature_trends.csv';
+                                        if (artifact.visualization === 'profile') return 'depth_profile.csv';
+                                        if (artifact.visualization === 'ts') return 'ts_diagram.json';
+                                        if (artifact.visualization === 'qc') return 'qc_dashboard.json';
+                                        if (artifact.visualization === 'trajectory') return 'float_trajectory.geojson';
+                                        return 'visualization.json';
+                                      case 'chart': return 'chart_data.json';
+                                      case 'table': return 'data_export.csv';
+                                      default: return 'data.json';
+                                    }
+                                  };
+
+                                  const getDescription = () => {
+                                    const count = Array.isArray(artifact.data) ? artifact.data.length :
+                                      (artifact.data as any)?.profiles?.length ||
+                                      (artifact.data as any)?.length || 0;
+                                    switch (artifact.type) {
+                                      case 'map': return `Displaying ${count} float positions on interactive map`;
+                                      case 'visualization':
+                                        if (artifact.visualization === 'timeseries') return 'Temperature & salinity trends over time';
+                                        if (artifact.visualization === 'profile') return 'Vertical depth profile measurements';
+                                        if (artifact.visualization === 'ts') return 'Temperature-salinity relationship diagram';
+                                        if (artifact.visualization === 'qc') return 'Data quality control dashboard';
+                                        if (artifact.visualization === 'trajectory') return 'Float movement trajectory path';
+                                        return 'Interactive data visualization';
+                                      case 'chart': return 'Statistical data analysis chart';
+                                      case 'table': return `${count} records in tabular format`;
+                                      default: return artifact.title;
+                                    }
+                                  };
+
+                                  const getIcon = () => {
+                                    switch (artifact.type) {
+                                      case 'map': return <Globe className="w-5 h-5" />;
+                                      case 'visualization':
+                                        if (artifact.visualization === 'timeseries') return <TrendingUp className="w-5 h-5" />;
+                                        if (artifact.visualization === 'profile') return <Activity className="w-5 h-5" />;
+                                        if (artifact.visualization === 'ts') return <Workflow className="w-5 h-5" />;
+                                        if (artifact.visualization === 'qc') return <CheckCircle2 className="w-5 h-5" />;
+                                        if (artifact.visualization === 'trajectory') return <MapPin className="w-5 h-5" />;
+                                        return <LineChart className="w-5 h-5" />;
+                                      case 'chart': return <BarChart2 className="w-5 h-5" />;
+                                      case 'table': return <Table2 className="w-5 h-5" />;
+                                      default: return <FileJson className="w-5 h-5" />;
+                                    }
+                                  };
+
+                                  return (
+                                    <motion.button
+                                      key={artifact.id}
+                                      initial={{ opacity: 0, y: 10 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      whileHover={{ scale: 1.005, x: 2 }}
+                                      whileTap={{ scale: 0.995 }}
+                                      onClick={() => {
+                                        setActiveArtifact(artifact);
+                                        setArtifactPanelOpen(true);
+                                      }}
+                                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border bg-muted/30 hover:bg-muted/60 transition-all group ${activeArtifact?.id === artifact.id ? 'ring-2 ring-primary bg-primary/5' : ''
+                                        }`}
+                                    >
+                                      {/* Icon */}
+                                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
+                                        {getIcon()}
+                                      </div>
+
+                                      {/* Title and description */}
+                                      <div className="flex-1 text-left min-w-0">
+                                        <div className="text-sm font-medium text-foreground truncate">
+                                          {artifact.title}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground truncate mt-0.5">
+                                          {getDescription()}
+                                        </div>
+                                      </div>
+
+                                      {/* Filename on right */}
+                                      <div className="flex-shrink-0 text-right">
+                                        <span className="text-xs font-mono text-muted-foreground/70 group-hover:text-muted-foreground transition-colors">
+                                          {getFilename()}
+                                        </span>
+                                      </div>
+                                    </motion.button>
+                                  );
+                                })}
                               </div>
                             )}
 
@@ -787,47 +860,46 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
             </div>
 
             {/* Panel Content */}
-            <div className="flex-1 overflow-hidden" style={{ minHeight: '400px' }}>
+            <div className="flex-1 overflow-hidden flex flex-col" style={{ minHeight: 0 }}>
               {/* Map Artifact */}
               {activeArtifact.type === 'map' && mapReady && (
-                <div style={{ height: '100%', width: '100%', minHeight: '400px' }}>
+                <div className="flex-1 relative" style={{ minHeight: '400px' }}>
                   <MapContainer
+                    key={`split-map-${activeArtifact.id}`}
                     center={[20, 65]}
                     zoom={4}
                     minZoom={2}
                     maxZoom={18}
-                    style={{ height: "100%", width: "100%", minHeight: '400px' }}
-                    zoomControl={true}
+                    style={{ height: "100%", width: "100%", position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                    zoomControl={false}
                   >
+                    {/* ESRI Satellite Imagery */}
                     <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.esri.com/">Esri</a> | <a href="https://www.usgs.gov/">USGS</a>'
+                      url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                     />
                     <MapBoundsHandler data={activeArtifact.data as FloatData[]} padding={0.15} />
                     {(activeArtifact.data as FloatData[]).map((float) => (
                       <CircleMarker
                         key={`${float.id}-${float.date || ''}`}
                         center={[float.lat, float.lng]}
-                        radius={7}
+                        radius={float.is_anomaly ? 9 : 3}
                         pathOptions={{
-                          color: getMarkerColor(float),
+                          color: float.is_anomaly ? '#ffffff' : getMarkerColor(float),
                           fillColor: getMarkerColor(float),
-                          fillOpacity: 0.85,
-                          weight: 2,
+                          fillOpacity: float.is_anomaly ? 1 : 0.8,
+                          weight: float.is_anomaly ? 2 : 1,
                         }}
                         eventHandlers={{
                           click: () => setSelectedFloat(float),
                         }}
                       >
-                        <Popup>
-                          <div className="text-sm p-1">
-                            <p className="font-medium mb-1">Float {float.id}</p>
-                            {float.temp != null && <p>Temp: {float.temp.toFixed(2)}°C</p>}
-                            {float.salinity != null && <p>Salinity: {float.salinity.toFixed(2)} PSU</p>}
-                            {float.depth != null && <p>Depth: {float.depth}m</p>}
-                            {float.date && <p>Date: {new Date(float.date).toLocaleDateString()}</p>}
+                        <Tooltip>
+                          <div className="text-xs">
+                            <div className="font-semibold">Float {float.id}</div>
+                            <div>{float.temp?.toFixed(1)}°C • {float.salinity?.toFixed(1)} PSU</div>
                           </div>
-                        </Popup>
+                        </Tooltip>
                       </CircleMarker>
                     ))}
                   </MapContainer>
@@ -1007,47 +1079,45 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
             </div>
 
             {/* Panel Content */}
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
               {/* Map Artifact */}
               {activeArtifact.type === 'map' && mapReady && (
-                <div className="h-full w-full">
+                <div className="flex-1 min-h-0">
                   <MapContainer
                     center={[20, 65]}
                     zoom={4}
                     minZoom={2}
                     maxZoom={18}
                     style={{ height: "100%", width: "100%" }}
-                    zoomControl={true}
+                    zoomControl={false}
                   >
+                    {/* ESRI Satellite Imagery */}
                     <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.esri.com/">Esri</a> | <a href="https://www.usgs.gov/">USGS</a>'
+                      url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                     />
                     <MapBoundsHandler data={activeArtifact.data as FloatData[]} padding={0.15} />
                     {(activeArtifact.data as FloatData[]).map((float) => (
                       <CircleMarker
                         key={`${float.id}-${float.date || ''}`}
                         center={[float.lat, float.lng]}
-                        radius={8}
+                        radius={float.is_anomaly ? 9 : 3}
                         pathOptions={{
-                          color: getMarkerColor(float),
+                          color: float.is_anomaly ? '#ffffff' : getMarkerColor(float),
                           fillColor: getMarkerColor(float),
-                          fillOpacity: 0.85,
-                          weight: 2,
+                          fillOpacity: float.is_anomaly ? 1 : 0.8,
+                          weight: float.is_anomaly ? 2 : 1,
                         }}
                         eventHandlers={{
                           click: () => setSelectedFloat(float),
                         }}
                       >
-                        <Popup>
-                          <div className="text-sm p-1">
-                            <p className="font-medium mb-1">Float {float.id}</p>
-                            {float.temp != null && <p>Temp: {float.temp.toFixed(2)}°C</p>}
-                            {float.salinity != null && <p>Salinity: {float.salinity.toFixed(2)} PSU</p>}
-                            {float.depth != null && <p>Depth: {float.depth}m</p>}
-                            {float.date && <p>Date: {new Date(float.date).toLocaleDateString()}</p>}
+                        <Tooltip>
+                          <div className="text-xs">
+                            <div className="font-semibold">Float {float.id}</div>
+                            <div>{float.temp?.toFixed(1)}°C • {float.salinity?.toFixed(1)} PSU</div>
                           </div>
-                        </Popup>
+                        </Tooltip>
                       </CircleMarker>
                     ))}
                   </MapContainer>

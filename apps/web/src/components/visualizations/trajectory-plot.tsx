@@ -63,7 +63,7 @@ export function TrajectoryPlot({
     title,
     showDateLabels = true,
     showStationMarkers = true,
-    markerInterval = 10, // Every 10th point gets a date label
+    markerInterval = 20, // Every 20th point gets a marker (reduced clutter)
     height = 450,
     className = '',
     floatId,
@@ -175,18 +175,39 @@ export function TrajectoryPlot({
         );
     };
 
-    // Custom dot to show at specific points
+    // Custom dot to show at specific points - with smart label positioning
     const CustomizedDot = (props: any) => {
-        const { cx, cy, payload } = props;
+        const { cx, cy, payload, index: dotIndex } = props;
 
         if (!showStationMarkers) return null;
+
+        // Calculate label position to avoid overlap
+        // Alternate label positions: right, top, left, bottom
+        const getLabelPosition = (idx: number) => {
+            const positions = [
+                { dx: 14, dy: -4, anchor: 'start' },   // right
+                { dx: 0, dy: -14, anchor: 'middle' },  // top
+                { dx: -14, dy: -4, anchor: 'end' },    // left
+                { dx: 0, dy: 18, anchor: 'middle' },   // bottom
+            ];
+            return positions[idx % positions.length];
+        };
+
+        const labelPos = getLabelPosition(payload.index);
 
         // Start point (green)
         if (payload.index === 0) {
             return (
                 <g>
                     <circle cx={cx} cy={cy} r={8} fill="#22c55e" stroke="#fff" strokeWidth={2} />
-                    <text x={cx + 12} y={cy - 8} fill="#22c55e" fontSize={11} fontWeight="bold">
+                    <text
+                        x={cx + 14}
+                        y={cy - 10}
+                        fill="#22c55e"
+                        fontSize={10}
+                        fontWeight="600"
+                        textAnchor="start"
+                    >
                         {formatDate(payload.timestamp)}
                     </text>
                 </g>
@@ -198,27 +219,30 @@ export function TrajectoryPlot({
             return (
                 <g>
                     <circle cx={cx} cy={cy} r={8} fill="#ef4444" stroke="#fff" strokeWidth={2} />
-                    <text x={cx + 12} y={cy - 8} fill="#ef4444" fontSize={11} fontWeight="bold">
+                    <text
+                        x={cx + 14}
+                        y={cy - 10}
+                        fill="#ef4444"
+                        fontSize={10}
+                        fontWeight="600"
+                        textAnchor="start"
+                    >
                         {formatDate(payload.timestamp)}
                     </text>
                 </g>
             );
         }
 
-        // Milestone points (show date labels)
-        if (showDateLabels && payload.isLabelPoint) {
+        // Milestone points (show small dots only, no labels to prevent clutter)
+        if (payload.isLabelPoint) {
             return (
-                <g>
-                    <circle cx={cx} cy={cy} r={5} fill="#3b82f6" stroke="#fff" strokeWidth={1.5} />
-                    <text x={cx + 8} y={cy - 5} fill="#9ca3af" fontSize={10}>
-                        {formatShortDate(payload.timestamp)}
-                    </text>
-                </g>
+                <circle cx={cx} cy={cy} r={4} fill="#3b82f6" stroke="#fff" strokeWidth={1.5} />
             );
         }
 
         return null;
     };
+
 
     const displayTitle = title || `Float ${floatId || chartData[0]?.float_id || ''} Trajectory`;
 
@@ -243,7 +267,7 @@ export function TrajectoryPlot({
             </div>
 
             {/* Main Chart */}
-            <div className="relative bg-white rounded-lg">
+            <div className="relative bg-card dark:bg-card rounded-lg border border-border">
                 <ResponsiveContainer width="100%" height={height}>
                     <LineChart
                         data={chartData}

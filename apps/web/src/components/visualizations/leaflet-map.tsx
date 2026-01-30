@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Filter, BarChart3, Pencil, Layers, Clock, Maximize2, HelpCircle } from 'lucide-react';
 
 // Lazy load map components to avoid SSR issues
 const MapContainer = dynamic(
@@ -119,15 +120,17 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
   }, [data.trajectories]);
 
   // Get point color based on colorBy setting or anomaly status
+  // Reference design uses blue (#4da6ff) and pink/coral (#ff6b8a) dots
   const getPointColor = (point: FloatPosition): string => {
-    // Anomalies get special highlighting
+    // Anomalies get pink/coral highlighting
     if (point.is_anomaly) {
-      if (point.anomaly_type === 'temperature') return '#ff3333'; // Bright red
-      if (point.anomaly_type === 'salinity') return '#ff9933'; // Orange
-      return '#ff0066'; // Magenta for both
+      return '#ff6b8a'; // Pink/coral for anomalies
     }
     if (data.colorBy === 'temperature' && point.temperature !== undefined) {
-      return getTemperatureColor(point.temperature);
+      // Use blue to pink gradient for temperature
+      if (point.temperature < 15) return '#4da6ff'; // Cool - blue
+      if (point.temperature < 22) return '#b388ff'; // Medium - purple
+      return '#ff6b8a'; // Warm - pink
     }
     if (data.colorBy === 'salinity' && point.salinity !== undefined) {
       return getSalinityColor(point.salinity);
@@ -135,14 +138,15 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
     if (data.colorBy === 'depth' && point.pressure !== undefined) {
       return getDepthColor(point.pressure);
     }
-    return '#3b82f6';
+    // Default: randomly assign blue or pink based on some characteristic
+    return point.cycle_number % 2 === 0 ? '#4da6ff' : '#ff6b8a';
   };
 
-  // Get marker radius based on anomaly status (anomalies are 4x larger)
+  // Get marker radius based on anomaly status (anomalies are 3x larger, normal dots are tiny)
   const getMarkerRadius = (point: FloatPosition, isSelected: boolean = false): number => {
-    const baseRadius = isSelected ? 6 : 4;
+    const baseRadius = isSelected ? 4 : 3; // Smaller dots like reference
     if (point.is_anomaly) {
-      return baseRadius * 4; // 4x larger for anomalies
+      return baseRadius * 3; // 3x larger for anomalies
     }
     return baseRadius;
   };
@@ -175,14 +179,15 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
         ref={mapRef}
         center={center}
         zoom={zoom}
-        style={{ height: '100%', width: '100%', borderRadius: '0.5rem' }}
+        style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={true}
         className="z-0"
+        zoomControl={false}
       >
-        {/* Ocean-focused tile layer */}
+        {/* Satellite/Terrain tile layer - ESRI World Imagery */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | Tiles &copy; CARTO'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.esri.com/">Esri</a> | <a href="https://www.usgs.gov/">USGS</a>'
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
         />
 
         {/* Render trajectories as polylines */}
@@ -331,6 +336,35 @@ export function LeafletMap({ data, height = 500, className = '' }: LeafletMapPro
           </CircleMarker>
         ))}
       </MapContainer>
+
+      {/* Floating Map Toolbar - Right side */}
+      <motion.div
+        className="absolute top-4 right-4 flex gap-2 z-[1000]"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        {[
+          { icon: Search, label: 'Search' },
+          { icon: Filter, label: 'Filter' },
+          { icon: BarChart3, label: 'Charts' },
+          { icon: Pencil, label: 'Draw' },
+          { icon: Layers, label: 'Layers' },
+          { icon: Clock, label: 'Time' },
+          { icon: Maximize2, label: 'Fullscreen' },
+          { icon: HelpCircle, label: 'Help' },
+        ].map(({ icon: Icon, label }) => (
+          <motion.button
+            key={label}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-10 h-10 rounded-full bg-gray-800/80 backdrop-blur-sm flex items-center justify-center text-gray-300 hover:bg-gray-700/80 hover:text-white transition-colors shadow-lg"
+            title={label}
+          >
+            <Icon className="w-5 h-5" />
+          </motion.button>
+        ))}
+      </motion.div>
 
       {/* Float selection legend */}
       {data.trajectories && data.trajectories.length > 0 && (

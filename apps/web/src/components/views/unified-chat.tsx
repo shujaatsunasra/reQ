@@ -294,10 +294,20 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
   // Query mutation
   const queryMutation = useMutation({
     mutationFn: async (query: string) => {
+      // Build conversation history from previous messages (exclude typing indicators)
+      const history = messages
+        .filter(m => !m.isTyping && m.content)
+        .slice(-10) // Keep last 10 messages for context
+        .map(m => ({
+          role: m.role as 'user' | 'assistant',
+          content: m.content
+        }));
+
       return api.query({
         query,
         groq_api_key: groqApiKey || undefined,
         huggingface_api_key: huggingfaceApiKey || undefined,
+        conversation_history: history.length > 0 ? history : undefined,
         options: {
           include_visualizations: true,
         }

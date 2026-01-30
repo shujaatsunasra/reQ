@@ -481,7 +481,8 @@ class LLMService:
         self,
         query: str,
         data: Optional[Dict[str, Any]] = None,
-        context: Optional[str] = None
+        context: Optional[str] = None,
+        conversation_history: Optional[List[Dict[str, str]]] = None
     ) -> Dict[str, Any]:
         """
         Generate a natural language response for a query.
@@ -490,14 +491,15 @@ class LLMService:
             query: User's natural language query
             data: Retrieved oceanographic data
             context: Additional context (intent, etc.)
+            conversation_history: Previous messages for context [{"role": str, "content": str}]
         
         Returns:
             Dict with response, confidence, and metadata
         """
         has_real_data = bool(data)
         
-        # Build the prompt
-        prompt = self._build_prompt(query, data, context)
+        # Build the prompt with conversation history
+        prompt = self._build_prompt(query, data, context, conversation_history)
         
         # Generate response via provider controller
         response_text = await self.controller.generate_response(prompt)
@@ -533,7 +535,8 @@ class LLMService:
         self,
         query: str,
         data: Optional[Dict[str, Any]],
-        context: Optional[str]
+        context: Optional[str],
+        conversation_history: Optional[List[Dict[str, str]]] = None
     ) -> str:
         """Build an enhanced prompt with rich contextual awareness for the LLM."""
         
@@ -546,6 +549,7 @@ class LLMService:
 3. **No data = simple response**: If there's no data or the query is casual, give a brief, natural response.
 4. **Never invent patterns**: Only discuss statistics from the actual data provided.
 5. **NEVER mention technical tools**: Do NOT mention Matplotlib, Plotly, Python, GMT, libraries, or any implementation details. Just describe the data and insights.
+6. **Use conversation history**: Refer to previous messages to maintain context and provide relevant follow-up responses.
 
 ## For Casual Messages (greetings, how are you, etc.)
 - Respond briefly and naturally
@@ -558,6 +562,11 @@ class LLMService:
 - Connect to real oceanographic phenomena when relevant
 - If visualizations are shown, describe what they reveal - NOT how they were made
 
+## For Follow-up Questions
+- Reference previous discussion naturally
+- Build on previous findings
+- Don't repeat information already given
+
 ## FORBIDDEN Topics (NEVER mention these)
 - Library names (Matplotlib, Plotly, Recharts, D3, etc.)
 - Programming languages (Python, JavaScript, etc.)
@@ -569,7 +578,21 @@ class LLMService:
 - Casual messages: 1-2 sentences max
 - Data queries: 2-4 sentences with key findings"""
 
-        parts = [system_prompt, "", f"User Query: {query}"]
+        parts = [system_prompt]
+        
+        # Add conversation history for context
+        if conversation_history:
+            parts.append("\n## Conversation History:")
+            for msg in conversation_history:
+                role = msg.get("role", "user")
+                content = msg.get("content", "")
+                # Truncate long messages
+                if len(content) > 500:
+                    content = content[:500] + "..."
+                parts.append(f"{role.upper()}: {content}")
+            parts.append("")
+        
+        parts.append(f"\nCurrent User Query: {query}")
         
         if data:
             summary = self._summarize_data_enhanced(data)
@@ -580,7 +603,7 @@ class LLMService:
         if context:
             parts.append(f"\nAdditional Context: {context}")
         
-        parts.append("\nProvide a helpful, scientifically accurate response:")
+        parts.append("\nProvide a helpful, contextually-aware response:")
         
         return "\n".join(parts)
     

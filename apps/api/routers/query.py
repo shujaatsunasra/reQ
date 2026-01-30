@@ -31,11 +31,18 @@ orchestrator = MCPOrchestrator()
 refiner = IterativeRefiner()
 
 
+class ChatMessage(BaseModel):
+    """Single chat message for conversation history."""
+    role: str = Field(..., description="Message role: user or assistant")
+    content: str = Field(..., description="Message content")
+
+
 class QueryRequest(BaseModel):
     """Request model for query endpoint."""
     query: str = Field(..., description="Natural language query", min_length=1, max_length=2000)
     mode: str = Field(default="explorer", description="UI mode: explorer or power")
     context: Optional[Dict[str, Any]] = Field(default=None, description="Conversation context")
+    conversation_history: Optional[List[ChatMessage]] = Field(default=None, description="Previous messages for LLM context")
     deadline_ms: Optional[int] = Field(default=None, description="Maximum execution time in milliseconds")
     user_id: Optional[str] = Field(default=None, description="User identifier for rate limiting")
     groq_api_key: Optional[str] = Field(default=None, description="Groq API key (primary provider)")
@@ -158,10 +165,17 @@ async def process_query(request: QueryRequest) -> QueryResult:
             groq_api_key=request.groq_api_key,
             huggingface_api_key=request.huggingface_api_key
         )
+        
+        # Build conversation history for context
+        history = None
+        if request.conversation_history:
+            history = [{"role": m.role, "content": m.content} for m in request.conversation_history[-10:]]
+        
         llm_response = await llm.generate_response(
             query=request.query,
             data=result.data,
-            context=f"Intent: {dag.intent}"
+            context=f"Intent: {dag.intent}",
+            conversation_history=history
         )
         
         execution_time = (time.time() - start_time) * 1000

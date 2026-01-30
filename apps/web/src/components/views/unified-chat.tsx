@@ -232,6 +232,7 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
     activeConversationId,
     createConversation,
     addMessage: addStoreMessage,
+    updateConversationTitle,
     setCurrentResult,
     addToResultHistory,
     groqApiKey,
@@ -413,6 +414,46 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
           role: "assistant",
           content: data.response || "Analysis complete."
         });
+
+        // Generate smart title for new conversations (first query)
+        const activeConv = conversations.find(c => c.id === activeConversationId);
+        if (activeConv && activeConv.title === "New Conversation" && query) {
+          // Generate smart title based on query content
+          const queryLower = query.toLowerCase();
+          let smartTitle = "";
+
+          // Extract key topics from query
+          if (queryLower.includes("trajectory") || queryLower.includes("path")) {
+            smartTitle = "Float Trajectory Analysis";
+          } else if (queryLower.includes("temperature") && queryLower.includes("trend")) {
+            smartTitle = "Temperature Trends";
+          } else if (queryLower.includes("salinity")) {
+            smartTitle = "Salinity Analysis";
+          } else if (queryLower.includes("compare")) {
+            smartTitle = "Comparison Analysis";
+          } else if (queryLower.includes("anomal")) {
+            smartTitle = "Anomaly Detection";
+          } else if (queryLower.includes("profile")) {
+            smartTitle = "Depth Profiles";
+          } else if (queryLower.includes("show") && queryLower.includes("float")) {
+            smartTitle = "Float Locations";
+          } else {
+            // Default: Use first 40 chars of query as title
+            smartTitle = query.slice(0, 40);
+            if (query.length > 40) smartTitle += "...";
+          }
+
+          // Add region if mentioned
+          const regions = ["arabian sea", "bay of bengal", "indian ocean", "pacific", "atlantic"];
+          for (const region of regions) {
+            if (queryLower.includes(region)) {
+              smartTitle += ` in ${region.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`;
+              break;
+            }
+          }
+
+          updateConversationTitle(activeConversationId, smartTitle);
+        }
       }
 
       // Auto-open artifact panel if we have artifacts

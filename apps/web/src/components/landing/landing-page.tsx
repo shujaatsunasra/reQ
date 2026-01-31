@@ -83,7 +83,7 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
             transition={{ delay: 0.1 }}
             className="font-extrabold text-2xl tracking-tight"
           >
-            FloatChat
+            Vortex
           </motion.span>
         </div>
 
@@ -171,8 +171,8 @@ export function LandingPage({ onQuerySubmit }: LandingPageProps) {
                 onBlur={() => setInputFocused(false)}
                 placeholder="Ask about ARGO floats, temperature, salinity..."
                 className={`w-full px-6 py-5 pr-20 bg-card rounded-2xl text-base font-medium focus:outline-none transition-all duration-300 ${inputFocused
-                    ? 'border-transparent'
-                    : 'border-2 border-border hover:border-primary/30'
+                  ? 'border-transparent'
+                  : 'border-2 border-border hover:border-primary/30'
                   }`}
               />
               <motion.button

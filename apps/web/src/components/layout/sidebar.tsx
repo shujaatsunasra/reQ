@@ -136,7 +136,7 @@ function SidebarComponent({ isOpen, onToggle, onNewChat, onOpenSettings }: Sideb
                                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-sm">
                                     <Sparkles className="w-4 h-4 text-primary-foreground" />
                                 </div>
-                                <span className="font-semibold text-lg">FloatChat</span>
+                                <span className="font-semibold text-lg">Vortex</span>
                             </div>
                             <button
                                 onClick={onToggle}

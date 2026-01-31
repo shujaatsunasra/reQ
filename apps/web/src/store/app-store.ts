@@ -176,7 +176,7 @@ export const useAppStore = create<AppState>()(
       setIsLoading: (value) => set({ isLoading: value }),
     }),
     {
-      name: "floatchat-storage",
+      name: "vortex-storage",
       partialize: (state) => ({
         theme: state.theme,
         llmProvider: state.llmProvider,

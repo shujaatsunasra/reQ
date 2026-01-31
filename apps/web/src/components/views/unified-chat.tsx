@@ -121,10 +121,14 @@ const TrajectoryPlot = dynamic(
 // Loading placeholder for visualizations
 function VizLoadingPlaceholder() {
   return (
-    <div className="flex items-center justify-center h-64 bg-muted/30 rounded-xl animate-pulse">
-      <div className="flex flex-col items-center gap-2 text-muted-foreground">
-        <Loader2 className="w-6 h-6 animate-spin" />
-        <span className="text-xs">Loading visualization...</span>
+    <div className="flex items-center justify-center h-64 bg-gradient-to-br from-muted/30 via-muted/10 to-muted/30 rounded-xl border border-border/50 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+      <div className="relative flex flex-col items-center gap-3 text-muted-foreground">
+        <div className="relative">
+          <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
+          <div className="absolute inset-0 blur-xl bg-primary/20 animate-pulse" />
+        </div>
+        <span className="text-xs font-medium">Loading visualization...</span>
       </div>
     </div>
   );
@@ -611,7 +615,7 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
                           >
                             <Sparkles className="w-3.5 h-3.5 text-primary" />
                           </motion.div>
-                          <span className="text-xs text-muted-foreground font-medium">FloatChat</span>
+                          <span className="text-xs text-muted-foreground font-medium">Vortex</span>
                           {message.metadata?.cached && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-500">
                               Cached
@@ -619,24 +623,33 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
                           )}
                         </div>
 
-                        {/* Typing indicator */}
+                        {/* Typing indicator with status */}
                         {message.isTyping && (
-                          <div className="flex items-center gap-1 px-1 py-2">
+                          <div className="flex items-center gap-3 px-1 py-2">
+                            <div className="flex items-center gap-1">
+                              <motion.span
+                                className="w-2 h-2 rounded-full bg-primary"
+                                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+                                transition={{ repeat: Infinity, duration: 0.8, delay: 0 }}
+                              />
+                              <motion.span
+                                className="w-2 h-2 rounded-full bg-primary"
+                                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+                                transition={{ repeat: Infinity, duration: 0.8, delay: 0.2 }}
+                              />
+                              <motion.span
+                                className="w-2 h-2 rounded-full bg-primary"
+                                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+                                transition={{ repeat: Infinity, duration: 0.8, delay: 0.4 }}
+                              />
+                            </div>
                             <motion.span
-                              className="w-2 h-2 rounded-full bg-primary"
-                              animate={{ scale: [1, 1.2, 1] }}
-                              transition={{ repeat: Infinity, duration: 0.6, delay: 0 }}
-                            />
-                            <motion.span
-                              className="w-2 h-2 rounded-full bg-primary"
-                              animate={{ scale: [1, 1.2, 1] }}
-                              transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }}
-                            />
-                            <motion.span
-                              className="w-2 h-2 rounded-full bg-primary"
-                              animate={{ scale: [1, 1.2, 1] }}
-                              transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }}
-                            />
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="text-xs text-muted-foreground"
+                            >
+                              Analyzing data...
+                            </motion.span>
                           </div>
                         )}
 
@@ -859,7 +872,7 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
             defaultWidth={500}
             minWidth={350}
             maxWidth={700}
-            storageKey="floatchat-artifact-width"
+            storageKey="vortex-artifact-width"
             side="right"
             className="h-full border-l bg-card flex flex-col overflow-hidden"
           >

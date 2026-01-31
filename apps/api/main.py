@@ -142,10 +142,14 @@ else:
                 huggingface_api_key=request.get("huggingface_api_key")
             )
             
+            # Extract conversation history for context
+            conversation_history = request.get("conversation_history", [])
+            
             llm_result = await llm.generate_response(
                 query=query_text,
                 data=data,
-                context=f"Power Mode analysis with REAL ARGO 2019 Indian Ocean data. {profile_count} profiles found."
+                context=f"Power Mode analysis with REAL ARGO 2019 Indian Ocean data. {profile_count} profiles found.",
+                conversation_history=conversation_history
             )
             response_text = llm_result.get("response", f"Found {profile_count} ARGO profiles.")
             confidence = llm_result.get("confidence", 0.85)

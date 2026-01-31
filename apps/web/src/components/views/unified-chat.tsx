@@ -55,6 +55,7 @@ import {
 import { useAppStore } from "@/store/app-store";
 import { api } from "@/lib/api";
 import { ResizablePanel } from "@/components/ui/resizable-panel";
+import { ExportDropdown } from "@/components/ui/export-dropdown";
 
 // Dynamic imports for visualizations
 const MapContainer = dynamic(
@@ -884,6 +885,13 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
                 <span className="font-medium text-sm">{activeArtifact.title}</span>
               </div>
               <div className="flex items-center gap-1">
+                {/* Export Dropdown */}
+                <ExportDropdown
+                  elementId={`artifact-content-${activeArtifact.id}`}
+                  data={activeArtifact.data as any[]}
+                  filename={activeArtifact.title?.replace(/\s+/g, '_').toLowerCase() || 'export'}
+                  type={activeArtifact.type === 'map' ? 'map' : 'chart'}
+                />
                 <button
                   onClick={() => setArtifactFullscreen(true)}
                   className="p-1.5 hover:bg-muted rounded-lg transition-colors"
@@ -904,7 +912,7 @@ export default function UnifiedChat({ isLoading: externalLoading, initialQuery }
             </div>
 
             {/* Panel Content */}
-            <div className="flex-1 overflow-hidden flex flex-col" style={{ minHeight: 0 }}>
+            <div id={`artifact-content-${activeArtifact.id}`} className="flex-1 overflow-hidden flex flex-col" style={{ minHeight: 0 }}>
               {/* Map Artifact */}
               {activeArtifact.type === 'map' && mapReady && (
                 <div className="flex-1 relative" style={{ minHeight: '400px' }}>

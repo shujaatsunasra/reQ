@@ -1,4 +1,4 @@
-# FloatChat - AI-Powered Oceanographic Data Analytics Platform
+# Vortex - AI-Powered Oceanographic Data Analytics Platform
 
 <div align="center">
 
